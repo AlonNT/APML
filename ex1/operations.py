@@ -35,7 +35,6 @@ def relu_tf(x):
 # b.shape = (k, m)
 def matmul_numpy(a: np.ndarray, b: np.ndarray):
     result = np.matmul(a, b)
-
     return result
 
 
@@ -59,7 +58,8 @@ def matmul_tf(a, b):
     result = tf.numpy_function(matmul_numpy, [a, b], tf.float32, name='my_matmul_op')
 
     def grad(dy_dab):
-        return tf.numpy_function(matmul_grad_numpy, [a, b, dy_dab], tf.float32, name='my_matmul_grad_op')
+        return tf.numpy_function(matmul_grad_numpy, [a, b, dy_dab],
+                                 [tf.float32, tf.float32], name='my_matmul_grad_op')
 
     return result, grad
 
@@ -70,7 +70,7 @@ def matmul_tf(a, b):
 # the result is a scalar
 # dloss_dyPredict.shape = YOUR ANSWER HERE
 def mse_numpy(y, ypredict):
-    loss = np.mean(np.square(y - ypredict))   # YOUR CODE HERE
+    loss = np.mean(np.square(y - ypredict))
     return loss
 
 
@@ -87,6 +87,8 @@ def mse_tf(y, y_predict):
     loss = tf.numpy_function(mse_numpy, [y, y_predict], tf.float32, name='my_mse_op')
 
     def grad(dy):
-        return tf.numpy_function(mse_grad_numpy, [y, y_predict, dy], tf.float32, name='my_mse_grad_op')
+        return tf.numpy_function(mse_grad_numpy,
+                                 [y, y_predict, dy],
+                                 [tf.float32, tf.float32], name='my_mse_grad_op')
 
     return loss, grad

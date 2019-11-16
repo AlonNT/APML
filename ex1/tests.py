@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
-from operations import matmul_tf, mse_tf
+from ex1.operations import matmul_tf, mse_tf
+from ex1.linear_regression import load_data, model, train
 
 
 def check_matmul():
@@ -75,3 +76,7 @@ if __name__ == '__main__':
 
     check_matmul()
     check_mse()
+
+    X, y = load_data()
+    losses = train(epochs=50, learning_rate=0.01, batch_size=32)
+
