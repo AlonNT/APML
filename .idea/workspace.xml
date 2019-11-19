@@ -2,13 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="72190662-d97a-4238-a082-deda27fce1da" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/alonnetser.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/alonnetser.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex1/Ex1_ConvNets.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/ex1/Ex1_ConvNets.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex1/linear_regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex1/linear_regression.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex1/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex1/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex1/operations.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex1/operations.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex1/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex1/tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ex1/Answers.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/ex1/Answers.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ex1/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex1/train.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -36,8 +31,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ex1/train.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="241" selection-start-line="241" selection-end-line="241" />
+            <state relative-caret-position="5876">
+              <caret line="275" selection-start-line="275" selection-end-line="275" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -60,7 +55,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ex1/operations.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1584">
+            <state relative-caret-position="167">
               <caret line="72" column="43" selection-start-line="72" selection-start-column="43" selection-end-line="72" selection-end-column="43" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
@@ -72,7 +67,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ex1/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1891">
+            <state relative-caret-position="1210">
               <caret line="55" column="7" selection-start-line="55" selection-start-column="7" selection-end-line="55" selection-end-column="7" />
             </state>
           </provider>
@@ -98,6 +93,7 @@
       <find>tf.</find>
       <find>grad</find>
       <find>perce</find>
+      <find>learning_rate</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -125,7 +121,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -142,6 +137,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -152,6 +148,11 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/ex1/plots" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -192,6 +193,9 @@
       <module name="APML" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ex1" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -296,12 +300,13 @@
       <workItem from="1573322023064" duration="4881000" />
       <workItem from="1573657949019" duration="8102000" />
       <workItem from="1573715639550" duration="22860000" />
-      <workItem from="1573816452679" duration="20598000" />
+      <workItem from="1573816452679" duration="20650000" />
+      <workItem from="1574144475833" duration="1402000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="66260000" />
+    <option name="totallyTimeSpent" value="67714000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -316,7 +321,7 @@
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15379113" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15665236" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -650,6 +655,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-202">
+          <caret line="1645" column="4" selection-start-line="1645" selection-start-column="4" selection-end-line="1645" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ex1/linear_regression.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="946">
@@ -662,7 +674,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ex1/operations.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1584">
+        <state relative-caret-position="167">
           <caret line="72" column="43" selection-start-line="72" selection-start-column="43" selection-end-line="72" selection-end-column="43" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
@@ -672,22 +684,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ex1/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1891">
+        <state relative-caret-position="1210">
           <caret line="55" column="7" selection-start-line="55" selection-start-column="7" selection-end-line="55" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-202">
-          <caret line="1645" column="4" selection-start-line="1645" selection-start-column="4" selection-end-line="1645" selection-end-column="4" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ex1/train.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="241" selection-start-line="241" selection-end-line="241" />
+        <state relative-caret-position="5876">
+          <caret line="275" selection-start-line="275" selection-end-line="275" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>

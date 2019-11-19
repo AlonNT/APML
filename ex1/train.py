@@ -17,6 +17,8 @@ save_checkpoint_steps = 1000
 def get_data():
     """
     Get the Fashion MNIST dataset, in the proper data-types and shapes.
+    The images are transformed from uint8 in 0,...,255 to float in [0,1].
+    The labels are transformed from uint8 to int32.
     """
     from tensorflow.keras.datasets import fashion_mnist
     (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
@@ -88,6 +90,7 @@ def train(model_fn, batch_size, learning_rate=None, **model_kwargs):
 
     init = tf.global_variables_initializer()
 
+    # Define the directories that will be created with the TensorBoard data and checkpoints.
     now_str = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
     logs_dir_name = os.path.join('logs', model_fn.__name__, now_str)
     checkpoint_directory = os.path.join(logs_dir_name, 'checkpoints')
@@ -229,6 +232,8 @@ def find_adversarial_image(checkpoint):
             grad_image = grad_image[0][0]
             classes_prob = classes_prob[0]
 
+            # In case this is the first iteration, save the classes' probabilities
+            # as they are the original prediction.
             if i == 0:
                 orig_classes_prob = np.copy(classes_prob)
 
@@ -238,8 +243,13 @@ def find_adversarial_image(checkpoint):
             if classes_prob[target_label] > 0.95:
                 break
 
-            curr_image -= 0.001 * grad_image
+            # Update the current-image with respect to the gradient of the new loss function.
+            # This makes the loss function decrease, so the prediction gets close to the target
+            # label, and the image remains not fat from the original one.
+            learning_rate = 0.001
+            curr_image -= learning_rate * grad_image
 
+    # Plot the original image, the added noise, and the final adversarial image.
     plt.subplot(1, 3, 1)
     plt.axis('off')
     plt.imshow(image[:, :, 0], cmap='gray')
@@ -258,9 +268,11 @@ def find_adversarial_image(checkpoint):
 
 
 def main():
-    # train(mlp, 64, dropout_rate=0)
-    # train(conv_net, 64, dropout_rate=0)
-    find_adversarial_image(checkpoint='logs/conv_net/2019_11_16_16_38_00_drop_025/checkpoints/ckpt-50000')
+    # train(mlp, 64)
+    # train(mlp, 64, dropout_rate=0.25)
+    # train(conv_net, 64)
+    train(conv_net, 64, dropout_rate=0.25)
+    # find_adversarial_image(checkpoint='logs/conv_net/2019_11_16_16_38_00_drop_025/checkpoints/ckpt-50000')
     pass
 
 
