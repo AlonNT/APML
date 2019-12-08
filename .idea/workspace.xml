@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="72190662-d97a-4238-a082-deda27fce1da" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/APML.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/APML.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ex2/PoS Tagging.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex2/PoS Tagging.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -32,12 +29,12 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ex2/PoS Tagging.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="521">
-              <caret line="839" column="29" lean-forward="true" selection-start-line="839" selection-start-column="29" selection-end-line="839" selection-end-column="29" />
+            <state relative-caret-position="803">
+              <caret line="849" lean-forward="true" selection-start-line="849" selection-end-line="849" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
-                <marker date="1575721795283" expanded="true" signature="30252:30890" ph="..." />
-                <marker date="1575721795283" expanded="false" signature="31995:33416" ph="..." />
+                <marker date="1575741451891" expanded="true" signature="30252:30890" ph="..." />
+                <marker date="1575741451891" expanded="false" signature="31995:33416" ph="..." />
               </folding>
             </state>
           </provider>
@@ -287,14 +284,22 @@
       <workItem from="1573715639550" duration="22860000" />
       <workItem from="1573816452679" duration="20650000" />
       <workItem from="1574144475833" duration="1402000" />
-      <workItem from="1575541454911" duration="38650000" />
+      <workItem from="1575541454911" duration="43060000" />
     </task>
+    <task id="LOCAL-00001" summary="Ex2 - everything seems to work fine now :)">
+      <created>1575721889511</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1575721889512</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="106364000" />
+    <option name="totallyTimeSpent" value="110774000" />
   </component>
-  <component name="TodoView">
+  <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
       <is-autoscroll-to-source value="true" />
     </todo-panel>
@@ -312,7 +317,7 @@
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" />
-      <window_info active="true" anchor="bottom" id="Version Control" visible="true" weight="0.32970297" />
+      <window_info anchor="bottom" id="Version Control" weight="0.32970297" />
       <window_info anchor="bottom" id="Python Console" sideWeight="0.4985694" weight="0.36138615" />
       <window_info anchor="bottom" id="Terminal" weight="0.32891566" />
       <window_info anchor="bottom" id="Event Log" sideWeight="0.50143063" side_tool="true" weight="0.43975905" />
@@ -322,7 +327,7 @@
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49928468" weight="0.46336633" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.32891566" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32871288" />
       <window_info anchor="right" x="0" y="0" width="310" height="609" id="Documentation" side_tool="true" weight="0.32920793" />
       <window_info anchor="right" id="SciView" weight="0.3297568" />
       <window_info anchor="right" id="Database" />
@@ -366,6 +371,11 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="Ex2 - everything seems to work fine now :)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ex2 - everything seems to work fine now :)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -433,12 +443,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ex2/PoS Tagging.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="521">
-          <caret line="839" column="29" lean-forward="true" selection-start-line="839" selection-start-column="29" selection-end-line="839" selection-end-column="29" />
+        <state relative-caret-position="803">
+          <caret line="849" lean-forward="true" selection-start-line="849" selection-end-line="849" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
-            <marker date="1575721795283" expanded="true" signature="30252:30890" ph="..." />
-            <marker date="1575721795283" expanded="false" signature="31995:33416" ph="..." />
+            <marker date="1575741451891" expanded="true" signature="30252:30890" ph="..." />
+            <marker date="1575741451891" expanded="false" signature="31995:33416" ph="..." />
           </folding>
         </state>
       </provider>

@@ -676,14 +676,6 @@ class MEMM(object):
 
                     print(f'Perceptron iteration #{iteration_number:6d},\t'
                           f'train-accuracy = {100 * train_accuracy:.2f}%')
-                    # if test_sentences is not None and test_pos_tags is not None:
-                    #     test_indices = np.random.choice(len(test_sentences), size=accuracy_batch_size)
-                    #     test_mask = test_sentences[test_indices] != ''
-                    #     test_pos_predictions = self.viterbi(test_sentences[test_indices], w)
-                    #     test_accuracy = np.mean(test_pos_predictions[test_mask] ==
-                    #                             test_pos_tags[test_indices][test_mask])
-                    #
-                    #     s += f'test-accuracy = #{test_accuracy:.2f},\t'
 
                 # Calculate the most likely sequence of PoS tags,
                 # given the current parameters of the model and the current sentence,
@@ -835,28 +827,23 @@ def main(model_name: str, training_data_portion_to_use: float = 1):
 
     if model_name == 'baseline':
         model = Baseline(train_sentences, train_pos_tags)
-        # train_pos_predictions = model.MAP(train_sentences)
         test_pos_predictions = model.MAP(test_sentences)
     elif model_name == 'hmm':
         model = HMM(train_sentences, train_pos_tags)
         sample_and_print(model)
-        # train_pos_predictions = model.viterbi(train_sentences)
         test_pos_predictions = model.viterbi(test_sentences)
     elif model_name == 'memm':
         phi, mapping_dimension = get_mapping(index2pos=np.unique(pos_tags)[1:],
                                              index2word=np.unique(sentences)[1:])
         model = MEMM(train_sentences, train_pos_tags, phi, mapping_dimension)
-        # train_pos_predictions = model.viterbi(train_sentences)
         test_pos_predictions = model.viterbi(test_sentences)
     else:
         raise ValueError("ERROR: Unrecognized model-name!")
 
-    # train_accuracy = evaluate_model(train_pos_tags, train_pos_predictions)
     test_accuracy = evaluate_model(test_pos_tags, test_pos_predictions)
 
-    # print(f'The accuracy of the {model_name} model on the train-data is {100 * train_accuracy:.2f}%.')
-    print(f'The accuracy of the {model_name} model on the test-data  is {100 * test_accuracy:.2f}%.')
+    print(f'The accuracy of the {model_name} model on the test-data is {100 * test_accuracy:.2f}%.')
 
 
 if __name__ == '__main__':
-    main(model_name='hmm', training_data_portion_to_use=0.1)
+    main(model_name='memm', training_data_portion_to_use=1)
