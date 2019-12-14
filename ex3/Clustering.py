@@ -5,9 +5,10 @@ import matplotlib as mpl
 import pickle
 
 
-def circles():
+def get_circles():
     """
     an example function for generating and plotting synthetic data.
+    :returns: An array of shape (N, 2) where each row contains a 2D point in the dataset.
     """
 
     t = np.arange(0, 2 * np.pi, 0.03)
@@ -24,29 +25,32 @@ def circles():
     circles = np.concatenate((circle1, circle2, circle3, circle4), axis=1)
 
     plt.figure()
-    plt.plot(circles[0, :], circles[1, :], '.k')
+    plt.scatter(circles[0, :], circles[1, :], s=5)
     plt.show()
 
     return circles.transpose()
 
 
-def apml_pic_example(path='APML_pic.pickle'):
+def get_apml_pic(path='./Clustering_Code/APML_pic.pickle'):
     """
     an example function for loading and plotting the APML_pic data.
 
     :param path: the path to the APML_pic.pickle file
+    :returns: An array of shape (N, 2) where each row contains a 2D point in the dataset.
     """
 
     with open(path, 'rb') as f:
         apml = pickle.load(f)
 
-    plt.plot(apml[:, 0], apml[:, 1], '.')
+    plt.scatter(apml[:, 0], apml[:, 1], s=5)
     plt.show()
 
+    return apml
 
-def microarray_exploration(data_path='microarray_data.pickle',
-                           genes_path='microarray_genes.pickle',
-                           conds_path='microarray_conds.pickle'):
+
+def microarray_exploration(data_path='./Clustering_Code/microarray_data.pickle',
+                           genes_path='./Clustering_Code/microarray_genes.pickle',
+                           conds_path='./Clustering_Code/microarray_conds.pickle'):
     """
     an example function for loading and plotting the microarray data.
     Specific explanations of the data set are written in comments inside the
@@ -55,6 +59,8 @@ def microarray_exploration(data_path='microarray_data.pickle',
     :param data_path: path to the data file.
     :param genes_path: path to the genes file.
     :param conds_path: path to the conds file.
+    :returns: An array of shape (N_genes, N_conds) where each row
+              contains the responses of the specific gene to the conditions.
     """
 
     # loading the data:
@@ -94,6 +100,40 @@ def microarray_exploration(data_path='microarray_data.pickle',
     plt.imshow(data, extent=[0, 1, 0, 1], cmap="hot", vmin=-3, vmax=3)
     plt.colorbar()
     plt.show()
+
+    return data, genes, conds
+
+
+def get_gaussians(k=7, n=100, r=1, std=0.17):
+    """
+    Generate a synthetic dataset containing k gaussians,
+    where each one is centered on the unit circle of radius r
+    (and the distance on the sphere between each center is the same).
+    Each gaussian has a standard deviation std, and contains n points.
+    :returns: An array of shape (N, 2) where each row contains a 2D point in the dataset.
+    """
+    # Generate the angles of each on of the k centers.
+    angles = np.linspace(start=0, stop=2 * np.pi, num=k, endpoint=False)
+
+    # Generate the points themselves by taking sin and cos, and multiplying by r
+    # to put it on the ball of radius r and not the necessarily the unit ball.
+    centers = r * np.stack([np.cos(angles), np.sin(angles)], axis=1)
+
+    # Create an empty array that will contain the generated points.
+    points = np.empty(shape=(k * n, 2), dtype=np.float64)
+
+    # For each one of the k centers, generate the points by
+    # sampling from a normal distribution in each axis.
+    for i in range(k):
+        points[i * n: i * n + n, 0] = np.random.normal(loc=centers[i, 0], scale=std, size=n)
+        points[i * n: i * n + n, 1] = np.random.normal(loc=centers[i, 1], scale=std, size=n)
+
+    # Plot the generated points.
+    plt.figure()
+    plt.scatter(points[:, 0], points[:, 1], s=5)
+    plt.show()
+
+    return points
 
 
 def euclid(X, Y):
@@ -176,26 +216,24 @@ def kmeans(X, k, iterations=10, metric=euclid, center=euclidean_centroid, init=k
     clustering - A N-dimensional vector with indices from 0 to k-1, defining the X_cluster.
     centroids - The kxD centroid matrix.
     """
-    # Initialize the centroids according to the given initialization function.
+    # Initialize the centroids according to the given initialization function,
+    # and assign the clusters accordingly.
     centroids = init(X, k, metric)
     clustering = metric(X, centroids).argmin(axis=1)
 
     for iteration in range(iterations):
-        # Calculate the cost of this clustering assignment.
-        curr_cost = np.sum(np.square(np.min(metric(X, centroids), axis=1)))
+        # Copy the previous centroids to compare with the new ones.
+        previous_centroids = np.copy(centroids)
+
+        # Assign each data-point to the cluster defined by the nearest centroid.
+        clustering = metric(X, centroids).argmin(axis=1)
 
         # Update the centroids according to the data-points in their cluster.
         for i in range(k):
             centroids[i] = center(X[clustering == i])
 
-        # Assign each data-point to the cluster defined by the nearest centroid.
-        clustering = metric(X, centroids).argmin(axis=1)
-
-        # Calculate the cost of the clustering after updating the centroids.
-        updated_cost = np.sum(np.square(np.min(metric(X, centroids), axis=1)))
-
-        # If the cost did not decrease - the algorithm has converged.
-        if not updated_cost < curr_cost:
+        # If the centroids did not change - the algorithm converged.
+        if np.allclose(previous_centroids, centroids):
             break
 
     return clustering, centroids
@@ -218,8 +256,25 @@ def mnn(X, m):
     :param m: The number of nearest neighbors.
     :return: NxN similarity matrix.
     """
-    stop = 'here'
-    # TODO: YOUR CODE HERE
+    # The ij-th entry will be True iff the j-th data-point is
+    # in the m nearest-neighbors of the i-th data-point.
+    j_is_neighbor_to_i = np.zeros_like(X, dtype=np.bool)
+
+    # The ij-th entry will be True iff the i-th data-point is
+    # in the m nearest-neighbors of the j-th data-point.
+    i_is_neighbor_to_j = np.zeros_like(X, dtype=np.bool)
+
+    # The i-th row contains the indices of the m nearest neighbors of the i-th point.
+    nearest_neighbors = np.argpartition(X, m, axis=1)[:, :m]
+
+    # Fill each one of the two arrays accordingly.
+    j_is_neighbor_to_i[np.repeat(np.arange(X.shape[0]), m),
+                       nearest_neighbors.flatten()] = True
+    i_is_neighbor_to_j[nearest_neighbors.flatten(),
+                       np.repeat(np.arange(X.shape[0]), m)] = True
+
+    # Return the OR of the two boolean arrays defined above.
+    return np.logical_or(j_is_neighbor_to_i, i_is_neighbor_to_j).astype(np.float)
 
 
 def spectral(X, k, similarity_param, similarity=gaussian_kernel):
@@ -255,9 +310,17 @@ def spectral(X, k, similarity_param, similarity=gaussian_kernel):
     # They are ordered in an ascending ordered of the eigenvalues.
     eigenvalues, eigenvectors = np.linalg.eigh(laplacian_matrix)
 
+    # These are the norms of each row in the eigenvectors,
+    # needed in order to normalize each row to be a unit-vector.
+    row_norms = np.linalg.norm(eigenvectors[:, :k], axis=1).reshape(-1, 1)
+    non_zero_rows = (row_norms.flatten() != 0)
+
     # Create a matrix containing the k eigenvectors corresponding to the
     # k lowest eigenvalues, and normalize each row to be of norm 1.
-    k_eigenvectors = eigenvectors[:, :k] / np.linalg.norm(eigenvectors[:, :k], axis=1).reshape(-1, 1)
+    # Rows with 0 norm (meaning all row is zero) can't be normalized
+    # to a unit-vector, so these vectors remains 0-vector.
+    k_eigenvectors = eigenvectors[:, :k]
+    k_eigenvectors[non_zero_rows] /= row_norms[non_zero_rows]
 
     # Run the k-means algorithm on the representation using the k eigenvectors.
     clustering, centroids = kmeans(k_eigenvectors, k)
@@ -265,57 +328,205 @@ def spectral(X, k, similarity_param, similarity=gaussian_kernel):
     return clustering
 
 
+def plot_clustering(points, k, clustering, title, centroids=None):
+    """
+    Plot the clustering of the data-points.
+    Also saves the figure in the directory 'figures'.
+    :param points: The data-points to plot.
+                   Should be 2-dimensional, since they will be plotted in R^2.
+    :param k: Amount of clusters.
+    :param clustering: An array indicating for each data-point the index of the assigen cluster.
+    :param title: The title of the plot - will be used both as a title to the figure
+                  and in the filename of the saved figure.
+    :param centroids: If given - plot the centroids as well.
+    """
+    plt.figure()
+    plt.suptitle(title)
+    color = iter(plt.cm.rainbow(np.linspace(0, 1, k)))
+    for cluster_i in range(k):
+        plt.scatter(points[clustering == cluster_i, 0],
+                    points[clustering == cluster_i, 1],
+                    s=5, c=next(color).reshape(1, -1))
+    if centroids is not None:
+        plt.plot(centroids[:, 0], centroids[:, 1], '*y', markersize=12)
+    plt.savefig(f'./figures/{title}.png')
+    plt.show()
+
+
+def plot_distance_matrix_histograms(distance_matrix, data_name):
+    """
+    Plot the distance matrix histograms - both regular histogram and cumulative.
+    :param distance_matrix: The distance matrix to plot.
+    :param name: Name of the data the distances were taken from.
+    """
+    # Take the upper triangular of the distances matrix, excluding the main diagonal.
+    # This is because the matrix is symmetric, and the main diagonal is the distance of each
+    # data-point to itself, which is zero.
+    distances = distance_matrix[np.triu_indices_from(distance_matrix, k=1)].flatten()
+
+    # Plot the histogram.
+    plt.figure()
+    plt.suptitle(f'{data_name} distances histogram')
+    plt.hist(distances, bins=100, density=True)
+    plt.savefig(f'./figures/{data_name}_distances_histogram.png')
+    plt.show()
+
+    # Plot the cumulative histogram.
+    plt.figure()
+    plt.suptitle(f'{data_name} distances cumulative histogram')
+    plt.hist(distances, cumulative=True, bins=100, density=True)
+    plt.savefig(f'./figures/{data_name}_distances_cumulative_histogram.png')
+    plt.show()
+
+
+def plot_similarity_matrices(X, spectral_clustering,
+                             similarity, similarity_param,
+                             data_name, kernel_name, param_name):
+    """
+    Plot the similarity matrices - based on the distances taken from the shuffled data points,
+    and based on the distances taken from the data points after sorting according to the clusters.
+    :param X: The data points
+    :param spectral_clustering: The clustering of the data-points.
+    :param similarity: A function that creates a similarity matrix from a distances matrix.
+    :param similarity_param: The parameter of the similarity (sigma in a gaussian kernel, and m in
+                             m-nearest neighbors kernel).
+    :param data_name: The name of the data the data-points are from.
+    :param kernel_name: The name of the kernel (gaussian / mnn).
+    :param param_name: The parameter name.
+    """
+    # Go through the shuffled data-points, and the data-points ordered according to the clusters.
+    for data, sort_type in [(np.random.permutation(X), 'shuffled_data'),
+                            (X[np.argsort(spectral_clustering)], 'sorted_data')]:
+        # Calculate the distance matrix and the similarity matrix.
+        distance_matrix = euclid(data, data)
+        similarity_matrix = similarity(distance_matrix, similarity_param)
+
+        # Plot the similarity matrix, treating it as a grayscale image.
+        plt.figure()
+        title = f'{data_name}_similarity_matrix_{sort_type}_{kernel_name}_{param_name}'
+        plt.suptitle(title)
+        plt.imshow(similarity_matrix, cmap='gray')
+        plt.savefig(f'./figures/{title}.png')
+        plt.show()
+
+
+def run_clustering():
+    """
+    The main function which runs the clustering algorithms (k-means and spectral clustering)
+    on the two datasets (APML and circles).
+    """
+    for data_name, X, k in [('APML', get_apml_pic(), 9),
+                            ('circles', get_circles(), 4)]:
+        # Cluster using k-means.
+        kmeans_clustering, kmeans_centroids = kmeans(X, k)
+
+        # Plot the clusters.
+        plot_clustering(X, k, kmeans_clustering,
+                        title=f'{data_name}_kmeans_clustering', centroids=kmeans_centroids)
+
+        # Calculate the distance matrix and plot the histogram of the values.
+        distance_matrix = euclid(X, X)
+        plot_distance_matrix_histograms(distance_matrix, data_name)
+
+        # Try many different similarity params,
+        # both for the gaussian kernel and for the m-nearest neighbors.
+        for similarity_param, similarity in [
+            (0.0625, gaussian_kernel),
+            (0.125, gaussian_kernel),
+            (0.25, gaussian_kernel),
+            (0.5, gaussian_kernel),
+            (1, gaussian_kernel),
+            (3, mnn),
+            (5, mnn),
+            (7, mnn),
+            (9, mnn),
+            (11, mnn),
+            (13, mnn),
+            (15, mnn),
+            (17, mnn),
+            (19, mnn),
+            (21, mnn),
+        ]:
+            if similarity == gaussian_kernel:
+                kernel_name = 'gaussian'
+                param_name = f'{similarity_param}_percentile'
+                similarity_param = np.percentile(distance_matrix, q=similarity_param)
+
+                # If the q is really small, the corresponding percentile could be 0.
+                # This is an invalid value for sigma, so we continue to the next iteration.
+                if similarity_param == 0:
+                    continue
+            else:
+                kernel_name = 'mnn'
+                param_name = str(similarity_param)
+
+            spectral_clustering = spectral(X, k, similarity_param, similarity)
+
+            plot_clustering(X, k, spectral_clustering,
+                            title=f'{data_name}_spectral_clustering_{kernel_name}_{param_name}')
+
+            plot_similarity_matrices(X, spectral_clustering,
+                                     similarity, similarity_param,
+                                     data_name, kernel_name, param_name)
+
+
+def elbow(data_points, max_k, n_tries=10, plot_clusters=False, data_name=''):
+    """
+    Run k-means on the data-points, trying many different option for k (from 1 to max_k, inclusive).
+    Each k will be tried n_tries, and run that achieved the lowest cost will be chosen.
+    Then, plot the cost as a function of k, allowing to see the 'elbow' and pick the best k.
+    :param data_points: The data-points to cluster.
+    :param max_k: Maximal k to try.
+    :param n_tries: Number of tries per k.
+    :param plot_clusters: Whether or not to plot the clustering for each k.
+    :param data_name: The name of the dataset.
+    """
+    # This will hold the cost per k.
+    costs = np.zeros(shape=max_k)
+
+    for k in range(1, max_k + 1):
+        best_cost, best_clustering, best_centroids = np.inf, None, None
+        for _ in range(n_tries):
+            clustering, centroids = kmeans(data_points, k)
+            curr_cost = np.sum(np.square(np.min(euclid(data_points, centroids), axis=1)))
+            if curr_cost < best_cost:
+                best_cost = curr_cost
+                best_clustering = np.copy(clustering)
+                best_centroids = np.copy(centroids)
+
+        costs[k-1] = best_cost
+
+        if plot_clusters:
+            plot_clustering(data_points, k, best_clustering,
+                            title=f'{data_name}_{k}_clusters', centroids=best_centroids)
+
+    # Plot the cost as a function of k, showing the 'elbow' effect.
+    plt.figure()
+    title = f'{data_name}_costs_graph'
+    plt.suptitle(title)
+    plt.scatter(np.arange(1, max_k + 1), costs, s=10)
+    plt.savefig(f'./figures/{title}.png')
+    plt.show()
+
+
+# TODO
+# def cluster_biological_data():
+#     data, genes, conds = microarray_exploration()
+#     max_gene_length = max(len(gene) for gene in genes)
+#     elbow(data, max_k=15, n_tries=10, plot_clusters=False, data_name='biological')
+#     genes = np.array(genes, dtype=np.dtype(('U', max_gene_length)))
+#
+#     stop = 'here'
+
+
 def main():
-    mpl.style.use('seaborn')
-    # N = 1000
-    # X = np.empty(shape=(N, 2), dtype=np.float32)
-    # X[:N // 2] = np.random.normal(loc=(3, 0), scale=2, size=(500, 2))
-    # X[N // 2:] = np.random.normal(loc=(-3, 0), scale=2, size=(500, 2))
-    # np.random.shuffle(X)
-
-    X = circles()
-    k = 4
-
-    kmeans_clustering, kmeans_centroids = kmeans(X, k)
-
-    plt.figure()
-    plt.suptitle('k-means clustering')
-    colors = ['.b', '.g', '.r', '.c', '.m']
-    for cluster_i in range(k):
-        plt.plot(X[kmeans_clustering == cluster_i, 0],
-                 X[kmeans_clustering == cluster_i, 1],
-                 colors[cluster_i])
-    plt.plot(kmeans_centroids[:, 0], kmeans_centroids[:, 1], '*y', markersize=12)
-    plt.savefig('./figures/kmeans_clustering.png')
-    plt.show()
-
-    distance_matrix = euclid(X, X)
-    sigma = np.percentile(distance_matrix, q=5)
-
-    plt.figure()
-    plt.suptitle('Distances (normalized) histogram')
-    plt.hist(distance_matrix.flatten(), bins=100, density=True)
-    plt.savefig('./figures/distances_histogram.png')
-    plt.show()
-
-    plt.figure()
-    plt.suptitle('Distances (normalized) cumulative histogram')
-    plt.hist(distance_matrix.flatten(), cumulative=True, bins=100, density=True)
-    plt.savefig('./figures/distances_cumulative_histogram.png')
-    plt.show()
-
-    spectral_clustering = spectral(X, k, similarity_param=0.5, similarity=gaussian_kernel)
-
-    plt.figure()
-    plt.suptitle('Spectral clustering')
-    colors = ['.b', '.g', '.r', '.c', '.m']
-    for cluster_i in range(k):
-        plt.plot(X[spectral_clustering == cluster_i, 0],
-                 X[spectral_clustering == cluster_i, 1],
-                 colors[cluster_i])
-    plt.savefig('./figures/spectral_clustering.png')
-    plt.show()
+    # run_clustering()
+    n_gaussians = 7
+    elbow(data_points=get_gaussians(k=n_gaussians, n=100, r=1, std=0.17),
+          max_k=2*n_gaussians, n_tries=10, plot_clusters=True, data_name=f'{n_gaussians}_gaussians')
+    # cluster_biological_data()
 
 
 if __name__ == '__main__':
+    mpl.style.use('seaborn')
     main()
