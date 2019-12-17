@@ -104,10 +104,10 @@ def microarray_exploration(data_path='./Clustering_Code/microarray_data.pickle',
     return data, genes, conds
 
 
-def get_gaussians(k=7, n=100, r=1, std=0.17):
+def get_gaussians(k=7, n=100, std=0.17):
     """
     Generate a synthetic dataset containing k gaussians,
-    where each one is centered on the unit circle of radius r
+    where each one is centered on the unit circle
     (and the distance on the sphere between each center is the same).
     Each gaussian has a standard deviation std, and contains n points.
     :returns: An array of shape (N, 2) where each row contains a 2D point in the dataset.
@@ -115,9 +115,8 @@ def get_gaussians(k=7, n=100, r=1, std=0.17):
     # Generate the angles of each on of the k centers.
     angles = np.linspace(start=0, stop=2 * np.pi, num=k, endpoint=False)
 
-    # Generate the points themselves by taking sin and cos, and multiplying by r
-    # to put it on the ball of radius r and not the necessarily the unit ball.
-    centers = r * np.stack([np.cos(angles), np.sin(angles)], axis=1)
+    # Generate the points themselves by taking sin and cos, on the unit ball.
+    centers = np.stack([np.cos(angles), np.sin(angles)], axis=1)
 
     # Create an empty array that will contain the generated points.
     points = np.empty(shape=(k * n, 2), dtype=np.float64)
@@ -195,6 +194,8 @@ def kmeans_pp_init(X, k, metric):
         probabilities = min_distances_to_centroids / min_distances_to_centroids.sum()
 
         # Sample the next centroid according the the calculated distribution.
+        if np.isnan(probabilities).any():
+            stop = 'here'
         centroids_indices[i] = np.random.choice(n, p=probabilities)
 
     return X[centroids_indices]
@@ -277,7 +278,20 @@ def mnn(X, m):
     return np.logical_or(j_is_neighbor_to_i, i_is_neighbor_to_j).astype(np.float)
 
 
-def spectral(X, k, similarity_param, similarity=gaussian_kernel):
+def plot_eigenvalues(eigenvalues, plot_eigenvalues_up_to, title):
+    plt.figure()
+    plt.suptitle(title)
+    plt.xticks(np.arange(1, plot_eigenvalues_up_to + 1))
+    plt.xlabel('eigenvalue index (ascending order, starts from 1)')
+    plt.ylabel('eigenvalue')
+    plt.plot(np.arange(1, plot_eigenvalues_up_to + 1),
+             eigenvalues[:plot_eigenvalues_up_to])
+    plt.savefig(f'./figures/{title}.png')
+    plt.show()
+
+
+def spectral(X, k, similarity_param, similarity=gaussian_kernel,
+             plot_eigenvalues_up_to=None):
     """
     Cluster the data into k clusters using the spectral clustering algorithm.
     :param X: A NxD data matrix.
@@ -309,6 +323,10 @@ def spectral(X, k, similarity_param, similarity=gaussian_kernel):
     # Calculate the eigenvalues and the eigenvectors of the Laplacian matrix.
     # They are ordered in an ascending ordered of the eigenvalues.
     eigenvalues, eigenvectors = np.linalg.eigh(laplacian_matrix)
+
+    if plot_eigenvalues_up_to is not None:
+        plot_eigenvalues(eigenvalues, plot_eigenvalues_up_to,
+                         title=f'{similarity.__name__}_{similarity_param}_eigenvalues')
 
     # These are the norms of each row in the eigenvectors,
     # needed in order to normalize each row to be a unit-vector.
@@ -415,8 +433,12 @@ def run_clustering():
     The main function which runs the clustering algorithms (k-means and spectral clustering)
     on the two datasets (APML and circles).
     """
-    for data_name, X, k in [('APML', get_apml_pic(), 9),
-                            ('circles', get_circles(), 4)]:
+    for data_name, X, k in [
+        # ('APML', get_apml_pic(), 9),
+        # ('circles', get_circles(), 4),
+        ('5_gaussians', get_gaussians(k=5, n=100, std=0.25), 5),
+        ('11_gaussians', get_gaussians(k=11, n=100, std=0.11), 11),
+    ]:
         # Cluster using k-means.
         kmeans_clustering, kmeans_centroids = kmeans(X, k)
 
@@ -450,7 +472,12 @@ def run_clustering():
             if similarity == gaussian_kernel:
                 kernel_name = 'gaussian'
                 param_name = f'{similarity_param}_percentile'
-                similarity_param = np.percentile(distance_matrix, q=similarity_param)
+
+                # Take the upper triangular of the distances matrix, excluding the main diagonal.
+                # This is because the matrix is symmetric, and the main diagonal is the distance of each
+                # data-point to itself, which is zero.
+                distances = distance_matrix[np.triu_indices_from(distance_matrix, k=1)].flatten()
+                similarity_param = np.percentile(distances, q=similarity_param)
 
                 # If the q is really small, the corresponding percentile could be 0.
                 # This is an invalid value for sigma, so we continue to the next iteration.
@@ -470,13 +497,13 @@ def run_clustering():
                                      data_name, kernel_name, param_name)
 
 
-def elbow(data_points, max_k, n_tries=10, plot_clusters=False, data_name=''):
+def elbow(data, max_k, n_tries=10, plot_clusters=False, data_name=''):
     """
     Run k-means on the data-points, trying many different option for k (from 1 to max_k, inclusive).
     Each k will be tried n_tries, and run that achieved the lowest cost will be chosen.
     Then, plot the cost as a function of k, allowing to see the 'elbow' and pick the best k.
-    :param data_points: The data-points to cluster.
-    :param max_k: Maximal k to try.
+    :param data: The data to cluster.
+    :param max_k: Maximal k to try. The k's will be 1,2,...,max_k.
     :param n_tries: Number of tries per k.
     :param plot_clusters: Whether or not to plot the clustering for each k.
     :param data_name: The name of the dataset.
@@ -487,8 +514,8 @@ def elbow(data_points, max_k, n_tries=10, plot_clusters=False, data_name=''):
     for k in range(1, max_k + 1):
         best_cost, best_clustering, best_centroids = np.inf, None, None
         for _ in range(n_tries):
-            clustering, centroids = kmeans(data_points, k)
-            curr_cost = np.sum(np.square(np.min(euclid(data_points, centroids), axis=1)))
+            clustering, centroids = kmeans(data, k)
+            curr_cost = np.sum(np.square(np.min(euclid(data, centroids), axis=1)))
             if curr_cost < best_cost:
                 best_cost = curr_cost
                 best_clustering = np.copy(clustering)
@@ -497,34 +524,199 @@ def elbow(data_points, max_k, n_tries=10, plot_clusters=False, data_name=''):
         costs[k-1] = best_cost
 
         if plot_clusters:
-            plot_clustering(data_points, k, best_clustering,
+            plot_clustering(data, k, best_clustering,
                             title=f'{data_name}_{k}_clusters', centroids=best_centroids)
 
     # Plot the cost as a function of k, showing the 'elbow' effect.
     plt.figure()
     title = f'{data_name}_costs_graph'
     plt.suptitle(title)
-    plt.scatter(np.arange(1, max_k + 1), costs, s=10)
+    plt.xticks(np.arange(1, max_k + 1))
+    plt.xlabel('k')
+    plt.ylabel('cost')
+    plt.plot(np.arange(1, max_k + 1), costs)
     plt.savefig(f'./figures/{title}.png')
     plt.show()
 
 
-# TODO
-# def cluster_biological_data():
-#     data, genes, conds = microarray_exploration()
-#     max_gene_length = max(len(gene) for gene in genes)
-#     elbow(data, max_k=15, n_tries=10, plot_clusters=False, data_name='biological')
-#     genes = np.array(genes, dtype=np.dtype(('U', max_gene_length)))
-#
-#     stop = 'here'
+def silhouette(data, clustering_function, max_k,
+               n_tries=10, plot_clusters=False, data_name='',
+               clustering_kwargs=None):
+    """
+    Try different k's and plot the silhouette scores in order to choose the best k.
+    :param data: The data to cluster.
+    :param clustering_function: The clustering function.
+                                Should be kmeans or spectral.
+    :param max_k: Maximal k to try. The k's will be 2,3,...,max_k.
+    :param n_tries: Number of tries per k.
+    :param plot_clusters: Whether or not to plot the clustering for each k.
+    :param data_name: The name of the dataset.
+    :param clustering_kwargs: Additional arguments for the clustering function
+                              (needed for the spectral clustering).
+    """
+    if clustering_kwargs is None:
+        clustering_kwargs = dict()
+
+    # In spectral clustering the similarity param is a percentile from all
+    # the pairwise distances, so set it accordingly.
+    if clustering_function == spectral and clustering_kwargs['similarity'] == gaussian_kernel:
+        # Take the upper triangular of the distances matrix, excluding the main diagonal.
+        # This is because the matrix is symmetric, and the main diagonal is the distance of each
+        # data-point to itself, which is zero.
+        distance_matrix = euclid(data, data)
+        distances = distance_matrix[np.triu_indices_from(distance_matrix, k=1)].flatten()
+        similarity_param = np.percentile(distances, q=clustering_kwargs['similarity_param'])
+        clustering_kwargs['similarity_param'] = similarity_param
+
+        # If the q is really small, the corresponding percentile could be 0.
+        # This is an invalid value for sigma, so we continue to the next iteration.
+        if similarity_param == 0:
+            print('sigma for the gaussian kernel is zero, can not work with that...')
+            return
+
+    n_points = data.shape[0]
+
+    # This will hold the silhouette score per k = 2,3,...,max_k
+    silhouette_scores = np.zeros(shape=max_k - 1)
+
+    for k in range(2, max_k + 1):
+        best_clustering, best_silhouette_score = None, -np.inf
+        for _ in range(n_tries):
+            clustering = clustering_function(data, k, **clustering_kwargs)
+
+            # In the k-means clustering function, two values are returned -
+            # clustering & centroids.
+            # Since we don't need the centroids here we just take the clustering.
+            if clustering_function == kmeans:
+                clustering = clustering[0]
+
+            # Now, calculate the silhouette score of this clustering.
+
+            # a_i will give us a measure of how well example i is assigned to
+            # its own cluster. The smaller a_i is, the better.
+            # a_i is the average distance between x_i and the other points
+            # within its own cluster.
+            a = np.zeros(shape=n_points, dtype=np.float)
+
+            # b_i gives us a similar measure of how close it is to the closest
+            # other cluster. The largest b_i is, the better.
+            # b_i is the average distance between x_i and the other points
+            # within the closest cluster to x_i which isn't its own cluster.
+            b = np.zeros(shape=n_points, dtype=np.float)
+
+            # Go through each sample in the data and calculate its a and b scores.
+            for i in range(n_points):
+                # Calculate the average distance between the i-th data point
+                # and the other points in each of the clusters.
+                d = np.zeros(shape=k, dtype=np.float)
+                for j in range(k):
+                    cluster_points_mask = (clustering == j)
+                    not_i_mask = np.ones_like(cluster_points_mask)
+                    not_i_mask[i] = False
+                    in_cluster_other_points_mask = cluster_points_mask & not_i_mask
+
+                    # If there are not points in the cluster which are not the i-th point
+                    # the mean distance to these points is defined as zero.
+                    if not np.any(in_cluster_other_points_mask):
+                        continue
+
+                    d[j] = np.mean(euclid(data[i].reshape(1, -1),
+                                          data[in_cluster_other_points_mask]))
+
+                # Calculate the average distance between the i-th data point
+                # and the other points within its own cluster.
+                a[i] = d[clustering[i]]
+
+                # Calculate the average distance between the i-th data point
+                # and the other points within the closest cluster
+                # to that data point which isn't its own cluster.
+                not_ith_cluster_mask = np.ones(k, dtype=np.bool)
+                not_ith_cluster_mask[clustering[i]] = False
+                b[i] = np.min(d[not_ith_cluster_mask])
+
+            assert np.all(np.max([a, b], axis=0) > 0)
+
+            silhouette_score = np.mean((b - a) / np.max([a, b], axis=0))
+
+            if silhouette_score > best_silhouette_score:
+                best_silhouette_score = silhouette_score
+                best_clustering = clustering
+
+        silhouette_scores[k-2] = best_silhouette_score
+
+        if plot_clusters:
+            plot_clustering(data, k, best_clustering, title=f'{data_name}_{k}_clusters')
+
+    # Plot the silhouette score as a function of k, showing the 'elbow' effect.
+    plt.figure()
+    title = f'{data_name}_{clustering_function.__name__}'
+    if clustering_function == spectral:
+        title += f'_{clustering_kwargs["similarity"].__name__}'
+        title += f'_{clustering_kwargs["similarity_param"]}'
+    title += '_silhouettes'
+    plt.suptitle(title)
+    plt.xlabel('k')
+    plt.ylabel('silhouette score')
+    plt.bar(np.arange(2, max_k + 1), silhouette_scores, tick_label=np.arange(2, max_k + 1))
+    plt.savefig(f'./figures/{title}.png')
+    plt.show()
+
+
+def cluster_biological_data(max_k=15):
+    data, genes, conds = microarray_exploration()
+    elbow(data, max_k, n_tries=10, plot_clusters=False, data_name='biological')
+
+    # Try many different similarity params,
+    # both for the gaussian kernel and for the m-nearest neighbors.
+    for similarity_param, similarity in [
+        (1, gaussian_kernel),
+        (2, gaussian_kernel),
+        (4, gaussian_kernel),
+        (8, gaussian_kernel),
+        (7, mnn),
+        (11, mnn),
+        (17, mnn),
+        (23, mnn),
+    ]:
+        # Try to cluster using spectral clustering with the above similarity kernel
+        # and similarity_param, using k = 2,3,...,max_k and plot the silhouette scores
+        silhouette(data, spectral, max_k,
+                   n_tries=10, plot_clusters=False, data_name='biological',
+                   clustering_kwargs={'similarity': similarity,
+                                      'similarity_param': similarity_param})
+
+        # Plot the eigenvalues of the spectral clustering using the above
+        # similarity kernel and similarity_param.
+        spectral(data, max_k,
+                 similarity_param=similarity_param, similarity=similarity,
+                 plot_eigenvalues_up_to=max_k)
 
 
 def main():
     # run_clustering()
-    n_gaussians = 7
-    elbow(data_points=get_gaussians(k=n_gaussians, n=100, r=1, std=0.17),
-          max_k=2*n_gaussians, n_tries=10, plot_clusters=True, data_name=f'{n_gaussians}_gaussians')
-    # cluster_biological_data()
+
+    # n_gaussians = 5
+    # max_k = 15
+    # data = get_gaussians(k=n_gaussians, n=100, std=0.25)
+    #
+    # elbow(data, max_k, n_tries=10, plot_clusters=True, data_name=f'{n_gaussians}_gaussians')
+    #
+    # n_gaussians = 11
+    # max_k = 20
+    # data = get_gaussians(k=n_gaussians, n=100, std=0.11)
+    #
+    # clustering = spectral(data, k=n_gaussians,
+    #                       similarity_param=0.1, similarity=gaussian_kernel,
+    #                       plot_eigenvalues_up_to=max_k)
+    # plot_clustering(data, n_gaussians, clustering,
+    #                 title=f'{n_gaussians}_gaussians_spectral_clustering')
+    #
+    # silhouette(data, spectral, max_k,
+    #            n_tries=10, plot_clusters=True, data_name=f'{n_gaussians}_gaussians',
+    #            clustering_kwargs={'similarity': mnn,
+    #                               'similarity_param': 5})
+
+    cluster_biological_data()
 
 
 if __name__ == '__main__':
