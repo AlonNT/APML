@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-
+from sklearn.manifold import TSNE
+from sklearn.datasets import load_digits
 import pickle
 
 
@@ -104,7 +105,7 @@ def microarray_exploration(data_path='./Clustering_Code/microarray_data.pickle',
     return data, genes, conds
 
 
-def get_gaussians(k=7, n=100, std=0.17):
+def get_gaussians_2d(k=7, n=100, std=0.17):
     """
     Generate a synthetic dataset containing k gaussians,
     where each one is centered on the unit circle
@@ -133,6 +134,61 @@ def get_gaussians(k=7, n=100, std=0.17):
     plt.show()
 
     return points
+
+
+def tsne_on_high_dimensional_gaussians(k=8, n=128, std=0.2, dimension=32):
+    """
+    Generate a synthetic dataset containing k gaussians in high dimension.
+    Each gaussian has a standard deviation std, and contains n points.
+    :returns: An array of shape (N, 2) where each row contains a 2D point in the dataset.
+    """
+    # The k centers of the gaussians will be random uniform points in the unit sphere.
+    random_normal_points = np.random.normal(size=(k, dimension))
+    centers = random_normal_points / np.linalg.norm(random_normal_points, axis=1).reshape(-1, 1)
+
+    # Create an empty array that will contain the generated points.
+    points = np.empty(shape=(k * n, dimension), dtype=np.float64)
+
+    # For each one of the k centers, generate the points by
+    # sampling from a normal distribution in each axis.
+    for i in range(k):
+        for dim in range(dimension):
+            points[i * n: i * n + n, dim] = np.random.normal(loc=centers[i, dim], scale=std, size=n)
+
+    points_embedded = TSNE(n_components=2).fit_transform(points)
+
+    # Cluster using spectral clustering.
+    spectral_clustering = spectral(points_embedded, k, similarity_param=7, similarity=mnn)
+
+    # Plot the clusters.
+    plot_clustering(points_embedded, k, spectral_clustering,
+                    title=f'tSNE_of_{k}_gaussians_{dimension}_dimensional_std_{std:.1f}')
+
+
+def tsne_on_digits():
+    """
+    Generate a synthetic dataset containing k gaussians in high dimension.
+    Each gaussian has a standard deviation std, and contains n points.
+    :returns: An array of shape (N, 2) where each row contains a 2D point in the dataset.
+    """
+    dataset = load_digits()
+
+    digits = dataset.data
+    digits_embedded = TSNE(n_components=2).fit_transform(digits)
+
+    # Plot the embedded points.
+    plt.figure()
+    title = 'tSNE_of_digits'
+    plt.suptitle(title)
+    color = iter(plt.cm.rainbow(np.linspace(0, 1, 10)))
+    for digit in dataset.target_names:
+        plt.scatter(digits_embedded[dataset.target == digit, 0],
+                    digits_embedded[dataset.target == digit, 1],
+                    s=5, c=next(color).reshape(1, -1),
+                    label=digit)
+    plt.legend()
+    plt.savefig(f'./figures/{title}.png')
+    plt.show()
 
 
 def euclid(X, Y):
@@ -399,7 +455,7 @@ def plot_distance_matrix_histograms(distance_matrix, data_name):
 
 def plot_similarity_matrices(X, spectral_clustering,
                              similarity, similarity_param,
-                             data_name, kernel_name, param_name):
+                             data_name):
     """
     Plot the similarity matrices - based on the distances taken from the shuffled data points,
     and based on the distances taken from the data points after sorting according to the clusters.
@@ -409,8 +465,6 @@ def plot_similarity_matrices(X, spectral_clustering,
     :param similarity_param: The parameter of the similarity (sigma in a gaussian kernel, and m in
                              m-nearest neighbors kernel).
     :param data_name: The name of the data the data-points are from.
-    :param kernel_name: The name of the kernel (gaussian / mnn).
-    :param param_name: The parameter name.
     """
     # Go through the shuffled data-points, and the data-points ordered according to the clusters.
     for data, sort_type in [(np.random.permutation(X), 'shuffled_data'),
@@ -421,7 +475,7 @@ def plot_similarity_matrices(X, spectral_clustering,
 
         # Plot the similarity matrix, treating it as a grayscale image.
         plt.figure()
-        title = f'{data_name}_similarity_matrix_{sort_type}_{kernel_name}_{param_name}'
+        title = f'{data_name}_similarity_matrix_{sort_type}_{similarity.__name__}_{similarity_param}'
         plt.suptitle(title)
         plt.imshow(similarity_matrix, cmap='gray')
         plt.savefig(f'./figures/{title}.png')
@@ -433,26 +487,27 @@ def run_clustering():
     The main function which runs the clustering algorithms (k-means and spectral clustering)
     on the two datasets (APML and circles).
     """
-    for data_name, X, k in [
-        # ('APML', get_apml_pic(), 9),
+    for data_name, data, k in [
+        ('APML', get_apml_pic(), 9),
         # ('circles', get_circles(), 4),
-        ('5_gaussians', get_gaussians(k=5, n=100, std=0.25), 5),
-        ('11_gaussians', get_gaussians(k=11, n=100, std=0.11), 11),
+        # ('5_gaussians', get_gaussians_2d(k=5, n=100, std=0.25), 5),
+        # ('11_gaussians', get_gaussians_2d(k=11, n=100, std=0.11), 11),
     ]:
         # Cluster using k-means.
-        kmeans_clustering, kmeans_centroids = kmeans(X, k)
+        kmeans_clustering, kmeans_centroids = kmeans(data, k)
 
         # Plot the clusters.
-        plot_clustering(X, k, kmeans_clustering,
+        plot_clustering(data, k, kmeans_clustering,
                         title=f'{data_name}_kmeans_clustering', centroids=kmeans_centroids)
 
         # Calculate the distance matrix and plot the histogram of the values.
-        distance_matrix = euclid(X, X)
+        distance_matrix = euclid(data, data)
         plot_distance_matrix_histograms(distance_matrix, data_name)
 
         # Try many different similarity params,
         # both for the gaussian kernel and for the m-nearest neighbors.
         for similarity_param, similarity in [
+            (0.03, gaussian_kernel),
             (0.0625, gaussian_kernel),
             (0.125, gaussian_kernel),
             (0.25, gaussian_kernel),
@@ -470,9 +525,6 @@ def run_clustering():
             (21, mnn),
         ]:
             if similarity == gaussian_kernel:
-                kernel_name = 'gaussian'
-                param_name = f'{similarity_param}_percentile'
-
                 # Take the upper triangular of the distances matrix, excluding the main diagonal.
                 # This is because the matrix is symmetric, and the main diagonal is the distance of each
                 # data-point to itself, which is zero.
@@ -483,18 +535,15 @@ def run_clustering():
                 # This is an invalid value for sigma, so we continue to the next iteration.
                 if similarity_param == 0:
                     continue
-            else:
-                kernel_name = 'mnn'
-                param_name = str(similarity_param)
 
-            spectral_clustering = spectral(X, k, similarity_param, similarity)
+            spectral_clustering = spectral(data, k, similarity_param, similarity)
 
-            plot_clustering(X, k, spectral_clustering,
-                            title=f'{data_name}_spectral_clustering_{kernel_name}_{param_name}')
+            plot_clustering(data, k, spectral_clustering,
+                            title=f'{data_name}_spectral_clustering_{similarity.__name__}_{similarity_param:.2f}')
 
-            plot_similarity_matrices(X, spectral_clustering,
+            plot_similarity_matrices(data, spectral_clustering,
                                      similarity, similarity_param,
-                                     data_name, kernel_name, param_name)
+                                     data_name)
 
 
 def elbow(data, max_k, n_tries=10, plot_clusters=False, data_name=''):
@@ -556,23 +605,6 @@ def silhouette(data, clustering_function, max_k,
     """
     if clustering_kwargs is None:
         clustering_kwargs = dict()
-
-    # In spectral clustering the similarity param is a percentile from all
-    # the pairwise distances, so set it accordingly.
-    if clustering_function == spectral and clustering_kwargs['similarity'] == gaussian_kernel:
-        # Take the upper triangular of the distances matrix, excluding the main diagonal.
-        # This is because the matrix is symmetric, and the main diagonal is the distance of each
-        # data-point to itself, which is zero.
-        distance_matrix = euclid(data, data)
-        distances = distance_matrix[np.triu_indices_from(distance_matrix, k=1)].flatten()
-        similarity_param = np.percentile(distances, q=clustering_kwargs['similarity_param'])
-        clustering_kwargs['similarity_param'] = similarity_param
-
-        # If the q is really small, the corresponding percentile could be 0.
-        # This is an invalid value for sigma, so we continue to the next iteration.
-        if similarity_param == 0:
-            print('sigma for the gaussian kernel is zero, can not work with that...')
-            return
 
     n_points = data.shape[0]
 
@@ -664,24 +696,33 @@ def silhouette(data, clustering_function, max_k,
 
 def cluster_biological_data(max_k=15):
     data, genes, conds = microarray_exploration()
+
+    # # Take the upper triangular of the distances matrix, excluding the main diagonal.
+    # # This is because the matrix is symmetric, and the main diagonal is the distance of each
+    # # data-point to itself, which is zero.
+    # distance_matrix = euclid(data, data)
+    # distances = distance_matrix[np.triu_indices_from(distance_matrix, k=1)].flatten()
+
     elbow(data, max_k, n_tries=10, plot_clusters=False, data_name='biological')
 
-    # Try many different similarity params,
-    # both for the gaussian kernel and for the m-nearest neighbors.
+    # Try many different similarity params for the gaussian kernel.
+    # The m-nearest neighbors similarity kernel worked worse (different values were tried between 7-21)
     for similarity_param, similarity in [
-        (1, gaussian_kernel),
         (2, gaussian_kernel),
+        (2.5, gaussian_kernel),
+        (3, gaussian_kernel),
+        (3.5, gaussian_kernel),
         (4, gaussian_kernel),
-        (8, gaussian_kernel),
-        (7, mnn),
-        (11, mnn),
-        (17, mnn),
-        (23, mnn),
+        (4.5, gaussian_kernel),
+        (5, gaussian_kernel),
     ]:
+        print(f'Spectral clustering the biological data, '
+              f'with {similarity.__name__} similarity '
+              f'associated with the parameter {similarity_param:.2f}...')
         # Try to cluster using spectral clustering with the above similarity kernel
         # and similarity_param, using k = 2,3,...,max_k and plot the silhouette scores
         silhouette(data, spectral, max_k,
-                   n_tries=10, plot_clusters=False, data_name='biological',
+                   n_tries=1, plot_clusters=False, data_name='biological',
                    clustering_kwargs={'similarity': similarity,
                                       'similarity_param': similarity_param})
 
@@ -697,13 +738,13 @@ def main():
 
     # n_gaussians = 5
     # max_k = 15
-    # data = get_gaussians(k=n_gaussians, n=100, std=0.25)
+    # data = get_gaussians_2d(k=n_gaussians, n=100, std=0.25)
     #
     # elbow(data, max_k, n_tries=10, plot_clusters=True, data_name=f'{n_gaussians}_gaussians')
     #
     # n_gaussians = 11
     # max_k = 20
-    # data = get_gaussians(k=n_gaussians, n=100, std=0.11)
+    # data = get_gaussians_2d(k=n_gaussians, n=100, std=0.11)
     #
     # clustering = spectral(data, k=n_gaussians,
     #                       similarity_param=0.1, similarity=gaussian_kernel,
@@ -716,7 +757,10 @@ def main():
     #            clustering_kwargs={'similarity': mnn,
     #                               'similarity_param': 5})
 
-    cluster_biological_data()
+    # cluster_biological_data()
+
+    # tsne_on_high_dimensional_gaussians()
+    tsne_on_digits()
 
 
 if __name__ == '__main__':
