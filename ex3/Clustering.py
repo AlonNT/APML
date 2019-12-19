@@ -112,6 +112,9 @@ def get_gaussians_2d(k=7, n=100, std=0.17):
     where each one is centered on the unit circle
     (and the distance on the sphere between each center is the same).
     Each gaussian has a standard deviation std, and contains n points.
+    :param k: The amount of gaussians to create
+    :param std: The standard deviation of each gaussian
+    :param n: The number of points per gaussian
     :returns: An array of shape (N, 2) where each row contains a 2D point in the dataset.
     """
     # Generate the angles of each on of the k centers.
@@ -141,7 +144,11 @@ def embedding_high_dimensional_gaussians_to_plane(k=8, n=128, std=0.2, dimension
     """
     Generate a synthetic dataset containing k gaussians in high dimension.
     Each gaussian has a standard deviation std, and contains n points.
-    :returns: An array of shape (N, 2) where each row contains a 2D point in the dataset.
+    Project this dataset to the plane using tSNE and PCA and plot the results.
+    :param k: The amount of gaussians to create
+    :param n: The number of points per gaussian
+    :param std: The standard deviation per gaussian
+    :param dimension: The dimensions of the points
     """
     # The k centers of the gaussians will be random uniform points in the unit sphere.
     random_normal_points = np.random.normal(size=(k, dimension))
@@ -177,9 +184,7 @@ def embedding_high_dimensional_gaussians_to_plane(k=8, n=128, std=0.2, dimension
 
 def embedding_digits_to_plane():
     """
-    Generate a synthetic dataset containing k gaussians in high dimension.
-    Each gaussian has a standard deviation std, and contains n points.
-    :returns: An array of shape (N, 2) where each row contains a 2D point in the dataset.
+    Project the digits dataset to the plane using tSNE and PCA and plot the results.
     """
     dataset = load_digits()
 
@@ -263,8 +268,6 @@ def kmeans_pp_init(X, k, metric):
         probabilities = min_distances_to_centroids / min_distances_to_centroids.sum()
 
         # Sample the next centroid according the the calculated distribution.
-        if np.isnan(probabilities).any():
-            stop = 'here'
         centroids_indices[i] = np.random.choice(n, p=probabilities)
 
     return X[centroids_indices]
@@ -303,6 +306,8 @@ def kmeans(X, k, iterations=10, metric=euclid, center=euclidean_centroid, init=k
             centroids[i] = center(X[clustering == i])
 
         # If the centroids did not change - the algorithm converged.
+        # We use allclose and not array_equal because these are floating points numbers which can
+        # differ due to numerical issues.
         if np.allclose(previous_centroids, centroids):
             break
 
@@ -348,6 +353,12 @@ def mnn(X, m):
 
 
 def plot_eigenvalues(eigenvalues, plot_eigenvalues_up_to, title):
+    """
+    Plot the eigenvalues to see the eigengap and choose the best k.
+    :param eigenvalues: The eigenvalues to plot.
+    :param plot_eigenvalues_up_to: How many eigenvalue to plot.
+    :param title: Title to give the plot and the filename.
+    """
     plt.figure()
     plt.suptitle(title)
     plt.xticks(np.arange(1, plot_eigenvalues_up_to + 1))
@@ -367,6 +378,7 @@ def spectral(X, k, similarity_param, similarity=gaussian_kernel,
     :param k: The number of desired clusters.
     :param similarity_param: m for mnn, sigma for the Gaussian kernel.
     :param similarity: The similarity transformation of the data.
+    :param plot_eigenvalues_up_to: If given, plot the eigenvalue up to this number.
     :return: clustering, as in the kmeans implementation.
     """
     n = X.shape[0]
@@ -498,13 +510,13 @@ def plot_similarity_matrices(X, spectral_clustering,
 def run_clustering():
     """
     The main function which runs the clustering algorithms (k-means and spectral clustering)
-    on the two datasets (APML and circles).
+    on the two datasets (APML and circles), and on the synthetic gaussians dataset.
     """
     for data_name, data, k in [
         ('APML', get_apml_pic(), 9),
-        # ('circles', get_circles(), 4),
-        # ('5_gaussians', get_gaussians_2d(k=5, n=100, std=0.25), 5),
-        # ('11_gaussians', get_gaussians_2d(k=11, n=100, std=0.11), 11),
+        ('circles', get_circles(), 4),
+        ('5_gaussians', get_gaussians_2d(k=5, n=100, std=0.25), 5),
+        ('11_gaussians', get_gaussians_2d(k=11, n=100, std=0.11), 11),
     ]:
         # Cluster using k-means.
         kmeans_clustering, kmeans_centroids = kmeans(data, k)
@@ -688,6 +700,10 @@ def silhouette(data, max_k, n_tries=10, plot_clusters=False, data_name=''):
 
 
 def find_k_for_biological_data(max_k=15):
+    """
+    Explore the biological data - plot the elbow, eigengap and silhouette scores.
+    :param max_k: Maximal k to plot.
+    """
     data, genes, conds = microarray_exploration()
 
     plot_distance_matrix_histograms(distance_matrix=euclid(data, data), data_name='biological')
@@ -739,11 +755,11 @@ def find_k_for_biological_data(max_k=15):
                                      data_name='biological')
 
     # Find the best k for k-means using the silhouette scores.
-    silhouette(data, max_k, n_tries=1, plot_clusters=False, data_name='biological')
+    silhouette(data, max_k, n_tries=10, plot_clusters=False, data_name='biological')
 
 
 def main():
-    # run_clustering()
+    run_clustering()
 
     # n_gaussians = 5
     # max_k = 15
@@ -751,9 +767,9 @@ def main():
     #
     # elbow(data, max_k, n_tries=10, plot_clusters=True, data_name=f'{n_gaussians}_gaussians')
     #
-    n_gaussians = 11
-    max_k = 20
-    data = get_gaussians_2d(k=n_gaussians, n=100, std=0.11)
+    # n_gaussians = 11
+    # max_k = 20
+    # data = get_gaussians_2d(k=n_gaussians, n=100, std=0.11)
     #
     # clustering = spectral(data, k=n_gaussians,
     #                       similarity_param=0.1, similarity=gaussian_kernel,
@@ -761,7 +777,7 @@ def main():
     # plot_clustering(data, n_gaussians, clustering,
     #                 title=f'{n_gaussians}_gaussians_spectral_clustering')
     #
-    silhouette(data, max_k, n_tries=50, plot_clusters=True, data_name=f'{n_gaussians}_gaussians')
+    # silhouette(data, max_k, n_tries=50, plot_clusters=True, data_name=f'{n_gaussians}_gaussians')
 
     # find_k_for_biological_data()
 

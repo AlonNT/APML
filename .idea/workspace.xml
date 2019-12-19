@@ -4,26 +4,7 @@
     <list default="true" id="72190662-d97a-4238-a082-deda27fce1da" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ex3/Clustering.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/Clustering.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_10_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_10_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_11_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_11_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_12_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_12_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_13_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_13_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_14_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_14_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_15_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_15_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_16_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_16_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_17_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_17_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_18_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_18_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_19_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_19_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_20_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_20_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_2_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_2_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_3_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_3_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_4_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_4_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_5_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_5_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_6_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_6_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_7_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_7_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_8_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_8_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/11_gaussians_9_clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/11_gaussians_9_clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/figures/biological_costs_graph.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/biological_costs_graph.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ex3/figures/APML_kmeans_clustering.png" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/figures/APML_kmeans_clustering.png" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -50,8 +31,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ex3/Clustering.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
-              <caret line="625" column="38" lean-forward="true" selection-start-line="625" selection-start-column="38" selection-end-line="625" selection-end-column="38" />
+            <state relative-caret-position="38">
+              <caret line="758" selection-start-line="758" selection-end-line="758" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -110,10 +91,10 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="1">
+  <component name="ProjectFrameBounds">
     <option name="y" value="23" />
     <option name="width" value="1920" />
-    <option name="height" value="989" />
+    <option name="height" value="809" />
   </component>
   <component name="ProjectId" id="1Tr0nUa3x0uRMsfQIGIosvmPyC5" />
   <component name="ProjectView">
@@ -121,6 +102,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -137,7 +119,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -331,7 +312,8 @@
       <workItem from="1576357024040" duration="69000" />
       <workItem from="1576478909929" duration="27577000" />
       <workItem from="1576686166550" duration="8691000" />
-      <workItem from="1576699972095" duration="1880000" />
+      <workItem from="1576699972095" duration="2059000" />
+      <workItem from="1576773838664" duration="709000" />
     </task>
     <task id="LOCAL-00001" summary="Ex2 - everything seems to work fine now :)">
       <created>1575721889511</created>
@@ -344,7 +326,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="198631000" />
+    <option name="totallyTimeSpent" value="199519000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -356,10 +338,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1920" height="989" extended-state="1" />
+    <frame x="0" y="23" width="1920" height="809" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14802982" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.20100144" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -374,12 +356,12 @@
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50143063" side_tool="true" weight="0.43975905" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.32891566" />
-      <window_info anchor="bottom" id="Python Console" order="12" sideWeight="0.4985694" visible="true" weight="0.40468228" />
+      <window_info anchor="bottom" id="Python Console" order="12" sideWeight="0.4985694" visible="true" weight="0.40446305" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" x="0" y="0" width="310" height="609" id="Documentation" order="3" side_tool="true" weight="0.328541" />
-      <window_info anchor="right" id="SciView" order="4" weight="0.42385516" />
+      <window_info anchor="right" id="SciView" order="4" weight="0.4234621" />
       <window_info anchor="right" id="Database" order="5" weight="0.328541" />
     </layout>
     <layout-to-restore>
@@ -450,18 +432,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/ex3/Clustering.py</url>
-          <line>266</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/ex3/Clustering.py</url>
-          <line>454</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
@@ -611,8 +581,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ex3/Clustering.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="625" column="38" lean-forward="true" selection-start-line="625" selection-start-column="38" selection-end-line="625" selection-end-column="38" />
+        <state relative-caret-position="38">
+          <caret line="758" selection-start-line="758" selection-end-line="758" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
