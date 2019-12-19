@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
 from sklearn.datasets import load_digits
 import pickle
 
@@ -136,7 +137,7 @@ def get_gaussians_2d(k=7, n=100, std=0.17):
     return points
 
 
-def tsne_on_high_dimensional_gaussians(k=8, n=128, std=0.2, dimension=32):
+def embedding_high_dimensional_gaussians_to_plane(k=8, n=128, std=0.2, dimension=32):
     """
     Generate a synthetic dataset containing k gaussians in high dimension.
     Each gaussian has a standard deviation std, and contains n points.
@@ -155,17 +156,26 @@ def tsne_on_high_dimensional_gaussians(k=8, n=128, std=0.2, dimension=32):
         for dim in range(dimension):
             points[i * n: i * n + n, dim] = np.random.normal(loc=centers[i, dim], scale=std, size=n)
 
-    points_embedded = TSNE(n_components=2).fit_transform(points)
+    points_tsne = TSNE(n_components=2).fit_transform(points)
+    points_pca = PCA(n_components=2).fit_transform(points)
 
-    # Cluster using spectral clustering.
-    spectral_clustering = spectral(points_embedded, k, similarity_param=7, similarity=mnn)
+    for points_embedded, embedding_type in [(points_tsne, 'tSNE'), (points_pca, 'PCA')]:
+        # Plot the embedded points.
+        plt.figure()
+        title = f'{embedding_type}_of_{k}_gaussians_{dimension}_dimensional_std_{std:.1f}'
+        plt.suptitle(title)
+        color = iter(plt.cm.rainbow(np.linspace(0, 1, 10)))
+        for i in range(k):
+            plt.scatter(points_embedded[i * n: i * n + n, 0],
+                        points_embedded[i * n: i * n + n, 1],
+                        s=5, c=next(color).reshape(1, -1),
+                        label=f'gaussian_#{i+1}')
+        plt.legend()
+        plt.savefig(f'./figures/{title}.png')
+        plt.show()
 
-    # Plot the clusters.
-    plot_clustering(points_embedded, k, spectral_clustering,
-                    title=f'tSNE_of_{k}_gaussians_{dimension}_dimensional_std_{std:.1f}')
 
-
-def tsne_on_digits():
+def embedding_digits_to_plane():
     """
     Generate a synthetic dataset containing k gaussians in high dimension.
     Each gaussian has a standard deviation std, and contains n points.
@@ -174,21 +184,24 @@ def tsne_on_digits():
     dataset = load_digits()
 
     digits = dataset.data
-    digits_embedded = TSNE(n_components=2).fit_transform(digits)
+
+    digits_tsne = TSNE(n_components=2).fit_transform(digits)
+    digits_pca = PCA(n_components=2).fit_transform(digits)
 
     # Plot the embedded points.
-    plt.figure()
-    title = 'tSNE_of_digits'
-    plt.suptitle(title)
-    color = iter(plt.cm.rainbow(np.linspace(0, 1, 10)))
-    for digit in dataset.target_names:
-        plt.scatter(digits_embedded[dataset.target == digit, 0],
-                    digits_embedded[dataset.target == digit, 1],
-                    s=5, c=next(color).reshape(1, -1),
-                    label=digit)
-    plt.legend()
-    plt.savefig(f'./figures/{title}.png')
-    plt.show()
+    for digits_embedded, embedding_type in [(digits_tsne, 'tSNE'), (digits_pca, 'PCA')]:
+        plt.figure()
+        title = f'{embedding_type}_on_digits'
+        plt.suptitle(title)
+        color = iter(plt.cm.rainbow(np.linspace(0, 1, 10)))
+        for digit in dataset.target_names:
+            plt.scatter(digits_embedded[dataset.target == digit, 0],
+                        digits_embedded[dataset.target == digit, 1],
+                        s=5, c=next(color).reshape(1, -1),
+                        label=digit)
+        plt.legend()
+        plt.savefig(f'./figures/{title}.png')
+        plt.show()
 
 
 def euclid(X, Y):
@@ -431,7 +444,7 @@ def plot_distance_matrix_histograms(distance_matrix, data_name):
     """
     Plot the distance matrix histograms - both regular histogram and cumulative.
     :param distance_matrix: The distance matrix to plot.
-    :param name: Name of the data the distances were taken from.
+    :param data_name: Name of the data the distances were taken from.
     """
     # Take the upper triangular of the distances matrix, excluding the main diagonal.
     # This is because the matrix is symmetric, and the main diagonal is the distance of each
@@ -588,41 +601,26 @@ def elbow(data, max_k, n_tries=10, plot_clusters=False, data_name=''):
     plt.show()
 
 
-def silhouette(data, clustering_function, max_k,
-               n_tries=10, plot_clusters=False, data_name='',
-               clustering_kwargs=None):
+def silhouette(data, max_k, n_tries=10, plot_clusters=False, data_name=''):
     """
     Try different k's and plot the silhouette scores in order to choose the best k.
     :param data: The data to cluster.
-    :param clustering_function: The clustering function.
-                                Should be kmeans or spectral.
     :param max_k: Maximal k to try. The k's will be 2,3,...,max_k.
     :param n_tries: Number of tries per k.
     :param plot_clusters: Whether or not to plot the clustering for each k.
     :param data_name: The name of the dataset.
-    :param clustering_kwargs: Additional arguments for the clustering function
-                              (needed for the spectral clustering).
     """
-    if clustering_kwargs is None:
-        clustering_kwargs = dict()
-
     n_points = data.shape[0]
 
     # This will hold the silhouette score per k = 2,3,...,max_k
     silhouette_scores = np.zeros(shape=max_k - 1)
 
     for k in range(2, max_k + 1):
-        best_clustering, best_silhouette_score = None, -np.inf
+        best_clustering, best_centroids, best_silhouette_score = None, None, -np.inf
         for _ in range(n_tries):
-            clustering = clustering_function(data, k, **clustering_kwargs)
+            clustering, centroids = kmeans(data, k)
 
-            # In the k-means clustering function, two values are returned -
-            # clustering & centroids.
-            # Since we don't need the centroids here we just take the clustering.
-            if clustering_function == kmeans:
-                clustering = clustering[0]
-
-            # Now, calculate the silhouette score of this clustering.
+            # Calculate the silhouette score of this clustering.
 
             # a_i will give us a measure of how well example i is assigned to
             # its own cluster. The smaller a_i is, the better.
@@ -666,26 +664,21 @@ def silhouette(data, clustering_function, max_k,
                 not_ith_cluster_mask[clustering[i]] = False
                 b[i] = np.min(d[not_ith_cluster_mask])
 
-            assert np.all(np.max([a, b], axis=0) > 0)
-
             silhouette_score = np.mean((b - a) / np.max([a, b], axis=0))
 
             if silhouette_score > best_silhouette_score:
                 best_silhouette_score = silhouette_score
-                best_clustering = clustering
+                best_clustering = np.copy(clustering)
+                best_centroids = np.copy(centroids)
 
         silhouette_scores[k-2] = best_silhouette_score
 
         if plot_clusters:
-            plot_clustering(data, k, best_clustering, title=f'{data_name}_{k}_clusters')
+            plot_clustering(data, k, best_clustering, title=f'{data_name}_{k}_clusters', centroids=best_centroids)
 
-    # Plot the silhouette score as a function of k, showing the 'elbow' effect.
+    # Plot the silhouette score as a function of k.
     plt.figure()
-    title = f'{data_name}_{clustering_function.__name__}'
-    if clustering_function == spectral:
-        title += f'_{clustering_kwargs["similarity"].__name__}'
-        title += f'_{clustering_kwargs["similarity_param"]}'
-    title += '_silhouettes'
+    title = f'{data_name}_silhouette'
     plt.suptitle(title)
     plt.xlabel('k')
     plt.ylabel('silhouette score')
@@ -694,15 +687,12 @@ def silhouette(data, clustering_function, max_k,
     plt.show()
 
 
-def cluster_biological_data(max_k=15):
+def find_k_for_biological_data(max_k=15):
     data, genes, conds = microarray_exploration()
 
-    # # Take the upper triangular of the distances matrix, excluding the main diagonal.
-    # # This is because the matrix is symmetric, and the main diagonal is the distance of each
-    # # data-point to itself, which is zero.
-    # distance_matrix = euclid(data, data)
-    # distances = distance_matrix[np.triu_indices_from(distance_matrix, k=1)].flatten()
+    plot_distance_matrix_histograms(distance_matrix=euclid(data, data), data_name='biological')
 
+    # Find the best k for k-means using the elbow method.
     elbow(data, max_k, n_tries=10, plot_clusters=False, data_name='biological')
 
     # Try many different similarity params for the gaussian kernel.
@@ -715,22 +705,41 @@ def cluster_biological_data(max_k=15):
         (4, gaussian_kernel),
         (4.5, gaussian_kernel),
         (5, gaussian_kernel),
+        (5.5, gaussian_kernel),
+        (6, gaussian_kernel),
+        (6.5, gaussian_kernel),
+        (7, gaussian_kernel),
+        (7.5, gaussian_kernel),
+        (8, gaussian_kernel),
     ]:
         print(f'Spectral clustering the biological data, '
               f'with {similarity.__name__} similarity '
               f'associated with the parameter {similarity_param:.2f}...')
-        # Try to cluster using spectral clustering with the above similarity kernel
-        # and similarity_param, using k = 2,3,...,max_k and plot the silhouette scores
-        silhouette(data, spectral, max_k,
-                   n_tries=1, plot_clusters=False, data_name='biological',
-                   clustering_kwargs={'similarity': similarity,
-                                      'similarity_param': similarity_param})
 
-        # Plot the eigenvalues of the spectral clustering using the above
-        # similarity kernel and similarity_param.
+        # Plot the eigengap for these similarity and similarity params.
         spectral(data, max_k,
                  similarity_param=similarity_param, similarity=similarity,
                  plot_eigenvalues_up_to=max_k)
+
+        # Now try different values for k in order to cluster the data.
+        # Afterwards we can investigate what seems the most reasonable result,
+        # according to the similarity graph and amount of points per cluster
+        # (and verify it did not cluster outliers as singletons clusters).
+        for k in [2, 3, 4, 5, 6, 7, 8]:
+            # Plot the eigenvalues of the spectral clustering using the above
+            # similarity kernel and similarity_param.
+            spectral_clustering = spectral(data, k, similarity_param=similarity_param, similarity=similarity)
+
+            print(f'\tClustering  into {k} clusters gives the following sizes of clusters:')
+            _, counts = np.unique(spectral_clustering, return_counts=True)
+            print('\t' + str(counts))
+
+            plot_similarity_matrices(data, spectral_clustering,
+                                     similarity, similarity_param,
+                                     data_name='biological')
+
+    # Find the best k for k-means using the silhouette scores.
+    silhouette(data, max_k, n_tries=1, plot_clusters=False, data_name='biological')
 
 
 def main():
@@ -742,9 +751,9 @@ def main():
     #
     # elbow(data, max_k, n_tries=10, plot_clusters=True, data_name=f'{n_gaussians}_gaussians')
     #
-    # n_gaussians = 11
-    # max_k = 20
-    # data = get_gaussians_2d(k=n_gaussians, n=100, std=0.11)
+    n_gaussians = 11
+    max_k = 20
+    data = get_gaussians_2d(k=n_gaussians, n=100, std=0.11)
     #
     # clustering = spectral(data, k=n_gaussians,
     #                       similarity_param=0.1, similarity=gaussian_kernel,
@@ -752,15 +761,19 @@ def main():
     # plot_clustering(data, n_gaussians, clustering,
     #                 title=f'{n_gaussians}_gaussians_spectral_clustering')
     #
-    # silhouette(data, spectral, max_k,
-    #            n_tries=10, plot_clusters=True, data_name=f'{n_gaussians}_gaussians',
-    #            clustering_kwargs={'similarity': mnn,
-    #                               'similarity_param': 5})
+    silhouette(data, max_k, n_tries=50, plot_clusters=True, data_name=f'{n_gaussians}_gaussians')
 
-    # cluster_biological_data()
+    # find_k_for_biological_data()
 
-    # tsne_on_high_dimensional_gaussians()
-    tsne_on_digits()
+    # See how k-means cluster this data - how many points per cluster.
+    # data, genes, conds = microarray_exploration()
+    # kmeans_clustering, kmeans_centroids = kmeans(data, k=4)
+    # print('clustering the microarray into 4 clusters gives the following sizes of clusters:')
+    # _, counts = np.unique(kmeans_clustering, return_counts=True)
+    # print(counts)
+
+    # embedding_high_dimensional_gaussians_to_plane()
+    # embedding_digits_to_plane()
 
 
 if __name__ == '__main__':
