@@ -412,7 +412,7 @@ def DiffusionMap(data, d, sigma, t):
     # Normalize each row to sum to 1, to create a Markov Transition Matrix.
     similarity_matrix /= similarity_matrix.sum(axis=1).reshape(-1, 1)
 
-    # Diagonalize the distance matrix.
+    # Diagonalize the similarity matrix.
     eigenvalues, eigenvectors = np.linalg.eigh(similarity_matrix)
 
     # NumPy returns the eigenvalues and eigenvectors in ascending order of magnitude,
@@ -476,10 +476,12 @@ def swiss_roll_playground():
 
 def get_similarity_matrix(data, sigma_as_percentile):
     """
-    TODO
-    :param data:
-    :param sigma_as_percentile:
-    :return:
+    Calculate the similarity matrix for the given data.
+
+    :param data: A (N, d) dimensional array of data to operate on.
+    :param sigma_as_percentile: which sigma to use, given as a percentile
+                                of the pairwise distances.
+    :return: A (N, N) pairwise similarity matrix.
     """
     # Calculate the pairwise distance matrix to take extract percentile out of it.
     distance_matrix = calc_squared_euclidean_distance_matrix(data)
@@ -501,6 +503,13 @@ def get_similarity_matrix(data, sigma_as_percentile):
 
 
 def diffusion_map_swiss_roll(sigmas=None, ts=None):
+    """
+    Try different parameters of sigma and t to use in the DiffusionMap dimensionality
+    reduction algorithm.
+
+    :param sigmas: an iterable of sigma values to try.
+    :param ts: an iterable of t values to try.
+    """
     data, color = datasets.samples_generator.make_swiss_roll(n_samples=2000)
 
     if sigmas is None:
@@ -529,6 +538,14 @@ def diffusion_map_swiss_roll(sigmas=None, ts=None):
 
 
 def plot_digits_embedding(digits_embedded, targets, targets_names, title):
+    """
+    Plot the given embedding of the digits dataset in 2D.
+
+    :param digits_embedded: The embedding of the digits to plot.
+    :param targets: label for each data-point.
+    :param targets_names: a list containing the labels names.
+    :param title: title of the plot, used in the file-name and in the header.
+    """
     plt.figure()
     plt.suptitle(title)
     color = iter(plt.cm.rainbow(np.linspace(0, 1, 10)))
@@ -543,6 +560,9 @@ def plot_digits_embedding(digits_embedded, targets, targets_names, title):
 
 
 def mnist_embeddings():
+    """
+    Try different dimensionality reduction algorithms on the digits dataset.
+    """
     dataset = datasets.load_digits()
     digits = dataset.data
     targets = dataset.target
@@ -574,6 +594,9 @@ def mnist_embeddings():
 
 
 def faces_embeddings(path='./faces.pickle'):
+    """
+    Try different dimensionality reduction algorithms on the faces dataset.
+    """
     with open(path, 'rb') as f:
         faces = pickle.load(f)
 

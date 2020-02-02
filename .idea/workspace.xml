@@ -2,28 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="72190662-d97a-4238-a082-deda27fce1da" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/alonnetser.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/alonnetser.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Claras_Notes/lecture_11_12_manifold.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Claras_Notes/lecture_13_reinforcement.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Claras_Notes/lectures_01_02_image_resotration.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Claras_Notes/lectures_03_04_structured_prediction.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Claras_Notes/lectures_05_06_convnets.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Claras_Notes/lectures_07_08_clustering.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MLE .pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex1/operations.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex1/operations.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/Clustering-Rhea.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/Clustering-Rhea.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/Clustering.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/Clustering.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/Clustering_Code/Clustering.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex3/Clustering_Code/Clustering.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/material/2340-an-impossibility-theorem-for-clustering.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/material/Clustering 1.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/material/Clustering 2 - spectral.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/material/Clustering 3 - tSNE.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/material/Spectral Clustering Tutorial (1).pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/material/cbms.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/material/k-means++.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ex3/material/t-sne tutorial.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ex4/Manifold_Learning.py" beforeDir="false" afterPath="$PROJECT_DIR$/ex4/Manifold_Learning.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -46,27 +25,35 @@
     <select />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ex4/Manifold_Learning.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="22">
-              <caret line="583" column="14" lean-forward="true" selection-start-line="583" selection-start-column="14" selection-end-line="583" selection-end-column="14" />
+            <state relative-caret-position="1826">
+              <caret line="595" column="44" selection-start-line="595" selection-start-column="44" selection-end-line="595" selection-end-column="44" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
-                <element signature="e#162#590#0" />
-                <element signature="e#162#242#1" />
-                <element signature="e#433#575#0" />
+                <element signature="e#234#662#0" />
+                <element signature="e#695#1059#0" />
+                <element signature="e#1091#1589#0" />
+                <element signature="e#1650#3022#0" />
+                <element signature="e#3079#3610#0" />
+                <element signature="e#3661#5022#0" />
+                <element signature="e#5108#6451#0" />
+                <element signature="e#7148#8394#0" />
+                <element signature="e#8465#10482#0" />
+                <element signature="e#10530#11673#0" />
+                <element signature="e#11719#12424#0" />
+                <element signature="e#12449#14620#0" />
+                <element signature="e#14664#16096#0" />
+                <element signature="e#16123#16534#0" />
+                <element signature="e#16570#17762#0" />
+                <element signature="e#17823#18797#0" />
+                <element signature="e#19105#19983#0" />
+                <element signature="e#20299#20701#0" />
+                <element signature="e#21063#22290#0" />
+                <element signature="e#22416#23842#0" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ex3/Clustering.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="66">
-              <caret line="3" selection-start-line="3" selection-end-line="4" selection-end-column="37" />
             </state>
           </provider>
         </entry>
@@ -131,10 +118,10 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds">
     <option name="y" value="23" />
-    <option name="width" value="1440" />
-    <option name="height" value="809" />
+    <option name="width" value="1920" />
+    <option name="height" value="989" />
   </component>
   <component name="ProjectId" id="1Tr0nUa3x0uRMsfQIGIosvmPyC5" />
   <component name="ProjectView">
@@ -365,6 +352,7 @@
       <workItem from="1578155294564" duration="1056000" />
       <workItem from="1578326296209" duration="511000" />
       <workItem from="1578671205457" duration="30120000" />
+      <workItem from="1579760590379" duration="2587000" />
     </task>
     <task id="LOCAL-00001" summary="Ex2 - everything seems to work fine now :)">
       <created>1575721889511</created>
@@ -377,7 +365,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="234818000" />
+    <option name="totallyTimeSpent" value="237405000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -389,13 +377,12 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="809" extended-state="6" />
+    <frame x="0" y="23" width="1920" height="989" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16237482" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.27873304" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Jupyter" weight="0.32970297" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32891566" />
       <window_info anchor="bottom" id="Run" order="2" />
@@ -408,12 +395,13 @@
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50143063" side_tool="true" weight="0.43975905" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.32891566" />
-      <window_info anchor="bottom" id="Python Console" order="12" sideWeight="0.4985694" weight="0.25544554" />
+      <window_info anchor="bottom" id="Python Console" order="12" sideWeight="0.4985694" visible="true" weight="0.28762543" />
+      <window_info anchor="bottom" id="Jupyter" order="13" weight="0.32970297" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" x="0" y="0" width="310" height="609" id="Documentation" order="3" side_tool="true" weight="0.328541" />
-      <window_info anchor="right" id="SciView" order="4" weight="0.42332268" />
+      <window_info anchor="right" id="SciView" order="4" weight="0.6449488" />
       <window_info anchor="right" id="Database" order="5" weight="0.32832617" />
     </layout>
     <layout-to-restore>
@@ -784,20 +772,40 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ex3/Clustering.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="66">
-          <caret line="3" selection-start-line="3" selection-end-line="4" selection-end-column="37" />
+        <state relative-caret-position="154">
+          <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ex4/Manifold_Learning.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="22">
-          <caret line="583" column="14" lean-forward="true" selection-start-line="583" selection-start-column="14" selection-end-line="583" selection-end-column="14" />
+        <state relative-caret-position="1826">
+          <caret line="595" column="44" selection-start-line="595" selection-start-column="44" selection-end-line="595" selection-end-column="44" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
-            <element signature="e#162#590#0" />
-            <element signature="e#162#242#1" />
-            <element signature="e#433#575#0" />
+            <element signature="e#234#662#0" />
+            <element signature="e#695#1059#0" />
+            <element signature="e#1091#1589#0" />
+            <element signature="e#1650#3022#0" />
+            <element signature="e#3079#3610#0" />
+            <element signature="e#3661#5022#0" />
+            <element signature="e#5108#6451#0" />
+            <element signature="e#7148#8394#0" />
+            <element signature="e#8465#10482#0" />
+            <element signature="e#10530#11673#0" />
+            <element signature="e#11719#12424#0" />
+            <element signature="e#12449#14620#0" />
+            <element signature="e#14664#16096#0" />
+            <element signature="e#16123#16534#0" />
+            <element signature="e#16570#17762#0" />
+            <element signature="e#17823#18797#0" />
+            <element signature="e#19105#19983#0" />
+            <element signature="e#20299#20701#0" />
+            <element signature="e#21063#22290#0" />
+            <element signature="e#22416#23842#0" />
           </folding>
         </state>
       </provider>
