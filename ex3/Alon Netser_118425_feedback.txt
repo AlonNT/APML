@@ -1,0 +1,20 @@
+311602536 
+
+	code:no clustering vizualization,
+	section:2.6,
+	description:,
+	penalty:5
+
+	code:general note/compliment,
+	section:,
+	description:(bonus) very thorough! but please, next time, try to follow the assignment structure strictly, to make our life, as grades, easier, and avoid loss of point :) ,
+	penalty:-3
+
+	code:Done,
+	section:,
+	description:,
+	penalty:0
+
+
+
+final grade is 98 out of 100

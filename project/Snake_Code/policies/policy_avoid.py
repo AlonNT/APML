@@ -19,11 +19,11 @@ class Avoid(bp.Policy):
     def learn(self, round, prev_state, prev_action, reward, new_state, too_slow):
 
         try:
-            if round % 100 == 0:
+            if round % 1000 == 0:
                 if round > self.game_duration - self.score_scope:
-                    self.log("Rewards in last 100 rounds which counts towards the score: " + str(self.r_sum), 'VALUE')
+                    self.log("Rewards in last 1000 rounds which counts towards the score: " + str(self.r_sum), 'VALUE')
                 else:
-                    self.log("Rewards in last 100 rounds: " + str(self.r_sum), 'VALUE')
+                    self.log("Rewards in last 1000 rounds: " + str(self.r_sum), 'VALUE')
                 self.r_sum = 0
             else:
                 self.r_sum += reward

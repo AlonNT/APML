@@ -1,5 +1,14 @@
 from policies import base_policy as bp
 import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+# TODO remove these lines - used for debugging purposes...
+# TODO --------------------------------------------------
+from datetime import datetime
+import os
+import json
+import pathlib
+# TODO --------------------------------------------------
 
 # The possible values are integers from -1 to 9 (inclusive) representing the different objects,
 # but we do not know which number correspond to which object.
@@ -198,12 +207,41 @@ class ReplayMemory:
         return self.size
 
 
-class LinearQLearning(bp.Policy):
+class QFunction(keras.Model):
     """
-    A policy which avoids collisions with obstacles and other snakes. It has an epsilon parameter which controls the
-    percentag of actions which are randomly chosen.
+    A model trying to approximate the Q-function for every action a, given a state as an input.
     """
+    def __init__(self):
+        super(QFunction, self).__init__()
+        self.conv1 = keras.layers.Conv2D(filters=16, kernel_size=3, activation=tf.nn.relu)
+        self.conv2 = keras.layers.Conv2D(filters=32, kernel_size=3, activation=tf.nn.relu)
+        self.conv3 = keras.layers.Conv2D(filters=64, kernel_size=3, activation=tf.nn.relu)
+        self.flatten = keras.layers.Flatten()
+        self.affine1 = keras.layers.Dense(units=128, activation=tf.nn.relu)
+        self.affine2 = keras.layers.Dense(units=N_ACTIONS)
 
+    def __call__(self, inputs, *args, **kwargs):
+        x = inputs
+
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+
+        x = self.flatten(x)
+
+        x = self.affine1(x)
+        x = self.affine2(x)
+
+        return x
+
+
+class DQN(bp.Policy):
+    """
+    An agent implementing Deep Q-Learning.
+    Reference:
+    "Human-level control through deep reinforcement learning"
+    https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
+    """
     params = {
         'epsilon': 0.1,  # epsilon controls the exploration:
                          # when acting, with probability epsilon select random action.
@@ -212,26 +250,38 @@ class LinearQLearning(bp.Policy):
                                 # The current epsilon will be initialized to epsilon, and decay linearly
                                 # to zero at the beginning of the score-scope.
 
-        'gamma': 0.95,  # gamma controls the reward decaying:
+        'gamma': 0.96,  # gamma controls the reward decaying:
                         # how much to prefer current reward over future rewards.
-
-        'lr': 0.01,  # The learning-rate.
-
-        'decay_lr': 0,  # Decay the learning-rate by half, every decay_lr iterations (if 0 - do not decay at all).
 
         'bs': 32,  # The mini-batch size to sample from the replay-memory
                    # in each training iteration.
 
         'window_size': 13,  # The size of the squared window to take around the head of the snake.
 
-        'memory_size': 500  # The size of the replay-memory - how many past experiences to keep.
+        'memory_size': 1000,  # The size of the replay-memory - how many past experiences to keep.
+
+        'update_target_interval': 100,  # How frequently should we update the weights of the target Q-function.
+
+        'sampling_method': 'uniform',  # How to sample mini-batches from the ReplayMemory.
+        'smallest_weight': 0.5,        # The minimal weight (probability) to give samples we wish to
+                                       # sample less (or not at all, if it's zero)
+
+        'double_dqn': False,  # Whether to implement Double-Deep-Q-Learning.
+                              # Reference:
+                              # "Deep Reinforcement Learning with Double Q-learning"
+                              # https://arxiv.org/pdf/1509.06461.pdf
+
+        # TODO remove these lines - used for debugging purposes...
+        # TODO --------------------------------------------------
+        'agent_name': ''
+        # TODO --------------------------------------------------
     }
 
     def cast_string_args(self, policy_args):
         # Initial the parameters according to their default values,
         # or according to the given arguments from the command-line.
-        for param_name in LinearQLearning.params.keys():
-            default_value = LinearQLearning.params[param_name]
+        for param_name in DQN.params.keys():
+            default_value = DQN.params[param_name]
             param_type = type(default_value)
 
             # If the parameter does not exist in the policy_args dictionary, add it with its default value.
@@ -244,29 +294,51 @@ class LinearQLearning(bp.Policy):
         return policy_args
 
     def init_run(self):
+        # TODO remove these lines - used for debugging purposes...
+        # TODO --------------------------------------------------
+        self.rewards = list()
+        self.losses = list()
+
         # This is the sum of rewards among the last iterations, in order to print.
         self.reward_sum = 0
-
-        # These are the weights-matrix and bias-vector of the linear function approximating the Q-function.
-        # Initialize the weight-matrix with normal distribution centered at 0 with small variance,
-        # and the bias-vector with zeros.
-        self.w = np.random.normal(loc=0, scale=0.01, size=(N_ACTIONS, N_VALUES * self.window_size ** 2))
-        self.b = np.zeros(shape=(3,))
+        # TODO --------------------------------------------------
 
         # This is the current epsilon, which defined the exploration probability.
         # It might change during time (e.g. decay).
         self.curr_epsilon = self.epsilon
-
-        # This is the current epsilon, which defined the exploration probability.
-        # It might change during time (e.g. decay).
-        self.curr_lr = self.lr
 
         # This is the number of exploration steps, which are all steps except the score scope.
         self.exploration_steps = self.game_duration - self.score_scope
 
         # This is the replay-memory containing the past experiences (up to a maximal size).
         self.replay_memory = ReplayMemory(state_shape=(self.window_size, self.window_size, N_VALUES),
-                                          max_size=self.memory_size)
+                                          max_size=self.memory_size,
+                                          sampling_method=self.sampling_method,
+                                          smallest_weight=self.smallest_weight)
+
+        # Initialize the two Q-functions - one is the actual Q-function to be learned, and the second is the target
+        # Q-function that will be fixed and its weights will be updated every self.update_target_interval iterations.
+        # (this is inspired by the original DQN paper).
+        self.q_function = QFunction()
+        self.target_function = QFunction()
+
+        self.q_function.compile(optimizer='adam', loss='mse')
+        self.target_function.compile(optimizer='adam', loss='mse')
+
+        # Avoid "lazy evaluation" in keras, which will cause the model to build its
+        # training-function and predict-function in the first learning iterations.
+        # This will speed up the first steps in the learning process.
+        dummy_samples = np.zeros(shape=(self.bs, self.window_size, self.window_size, N_VALUES), dtype=np.float32)
+        dummy_targets = np.zeros(shape=(self.bs, N_ACTIONS), dtype=np.float32)
+        for model in [self.q_function, self.target_function]:
+            # Predict on the dummy data, to make to model build its predict-function.
+            model.predict(x=dummy_samples, batch_size=self.bs)
+
+            # train on the dummy data, to make to model build its train-function.
+            # Note that the inputs and the targets are all zeros so the gradients are also zeros and this "learning"
+            # will not affect the initial weights (and even if it does,
+            # they are random initial weights so it does not really matter)
+            model.train_on_batch(x=dummy_samples, y=dummy_targets)
 
     def adjust_epsilon(self, curr_round):
         """
@@ -284,66 +356,78 @@ class LinearQLearning(bp.Policy):
             # set the current epsilon to do down linearly from the its initial value to 0.
             self.curr_epsilon = self.epsilon * (1 - float(curr_round) / float(self.exploration_steps))
 
-    def delta(self, states, actions, rewards, next_states):
+    def get_training_batch(self):
         """
-        Calculate 'delta' - the difference between the Q(s,a) and the desired value
-        (the reward plus gamma times the maximal Q-value for the next state).
-        :param states: A NumPy array of shape (d, n) containing a mini-batch of n state, each in d dimensions.
-                       These are the current states (at which the action was taken, the reward was received,
-                       and the next-state was observed).
-        :param actions: A NumPy vector containing n integers representing the actions.
-        :param rewards: A NumPy vector containing n rewards.
-        :param next_states: A NumPy array of shape (d, n) containing a mini-batch of n state, each in d dimensions.
-                            These are the next-states the agent observed, after being the the corresponding states
-                            and taking the corresponding action.
-        :return: A NumPy vector containing n values that are the results of the calculation.
+        Sample a mini-batch of experiences from the replay-memory, and adjust the tensors accordingly
+        to enable feeding them to the model without further processing.
+        The processing contains two things:
+            (*) Converting the states tensors to float32.
+                (the replay memory stores them in their original boolean values to save space).
+            (*) Building the target tensor for the model, which is a NumPy array of shape (batch-size, N_ACTIONS),
+                which is the same as the network's output tensor.
+                In each row (corresponding to a single training-sample) adjust the label of the corresponding action
+                (which is the action that was taken by the agent in that state) to be the addition of
+                (-) The corresponding reward (which is the reward that was given to the agent in that state when
+                    performing the action).
+                (-) The maximal Q(s_{t+1},a') for action a' (according to the target Q-function) multiplied by gamma.
+        :return: Two NumPy arrays, one is the input to the model and the other is the labels,
         """
-        n = states.shape[-1]    # This is the number of samples in the mini-batch
-        assert actions.shape == rewards.shape == (n,) and next_states.shape == states.shape
+        # Get a mini-batch of states, action, rewards and next_states from the replay-memory.
+        states, actions, rewards, next_states = self.replay_memory.sample(self.bs)
 
-        # These two are NumPy arrays with shape N_ACTIONS x n.
-        # Each column i is the state-action values Q(s_i,a) for the pairs (s_i, a) for all actions a.
-        states_actions_values = np.dot(self.w, states) + self.b.reshape(-1, 1)
-        next_states_actions_values = np.dot(self.w, next_states) + self.b.reshape(-1, 1)
+        # Convert the states to float32 to feed the models.
+        states = states.astype(np.float32)
+        next_states = next_states.astype(np.float32)
 
-        # This is a NumPy array of shape (n,) containing the state-action values Q(s_i,a_i) for i = 0,1,...,n-1.
-        states_actions_value = states_actions_values[(actions, np.arange(n))]
+        # Get Q(s_{t+1},a) for all actions a, according to the target Q-function.
+        next_states_actions_target_values = self.target_function.predict(next_states)
 
-        return states_actions_value - (rewards + self.gamma * np.max(next_states_actions_values, axis=0))
+        if self.double_dqn:
+            # Use the Q-function to select the greedy action - the action which maximizes the state-action value.
+            next_states_actions_q_values = self.q_function.predict(next_states)
+            next_states_argmax_action_value = next_states_actions_q_values.argmax(axis=1)
+
+            # Evaluate the state-action value on this action using the target network.
+            next_states_max_action_value = next_states_actions_target_values[np.arange(self.bs),
+                                                                             next_states_argmax_action_value]
+        else:
+            # Get the maximal Q(s_{t+1},a) for an action a'.
+            next_states_max_action_value = next_states_actions_target_values.max(axis=1)
+
+        # Initialize the targets tensor to be the output of the q-function model.
+        targets = self.q_function.predict(states)
+
+        # For each training-sample, adjust the label of the corresponding action accordingly
+        # (see the function's documentation for more details).
+        targets[np.arange(self.bs), actions] = rewards + self.gamma * next_states_max_action_value
+
+        # Convert the targets tensor to float32, to feed to the model.
+        targets = targets.astype(np.float32)
+
+        return states, targets
 
     def learn(self, round, prev_state, prev_action, reward, new_state, too_slow):
-        # Decay linearly to zero at the beginning of the score-scope.
         if self.decay_epsilon:
             self.adjust_epsilon(round)
 
-        # Decay the learning-rate by half, every decay_lr iterations (if 0 - do not decay at all).
-        if self.decay_lr != 0:
-            if round % self.decay_lr == 0:
-                self.curr_lr = self.lr * 0.5 ** (round // self.decay_lr)
+        # Verify that the ReplayMemory is not empty.
+        # Should not happen, but it might if the agent's learn function will be called at the beginning of the game.
+        if len(self.replay_memory) > 0:
+            # Get a mini-batch of experiences and train the Q-function model on this mini-batch.
+            inputs, targets = self.get_training_batch()
+            loss = self.q_function.train_on_batch(inputs, targets)
 
-        # Sample a mini-batch of experiences from the ReplayMemory.
-        sampled_states, sampled_actions, sampled_rewards, sampled_next_states = self.replay_memory.sample(self.bs)
+        # Every self.update_target_interval iterations,
+        # update the target Q-function network weights to match the Q-function weights.
+        if round % self.update_target_interval == 0:
+            self.target_function.set_weights(self.q_function.get_weights())
 
-        # Transpose the shape of the state from (bs, window_size, window_size, N_VALUES) to
-        # (window_size, window_size, N_VALUES, bs), to enable reshaping each state to be a column.
-        sampled_states = np.transpose(sampled_states, axes=(1, 2, 3, 0))
-        sampled_next_states = np.transpose(sampled_next_states, axes=(1, 2, 3, 0))
-
-        # Reshape them to the corresponding shape, to enable multiplying by the weight-matrix and adding the bias.
-        sampled_states = sampled_states.reshape(-1, self.bs)
-        sampled_next_states = sampled_next_states.reshape(-1, self.bs)
-
-        # Calculate the deltas for all experiences in the mini-batch in a vectorized way.
-        deltas = self.delta(sampled_states, sampled_actions, sampled_rewards, sampled_next_states)
-
-        # Update the weight-matrix and bias according to the gradient of the mini-batch.
-        coefficient = self.curr_lr * (float(1) / float(self.bs))
-        for i in range(self.bs):
-            action = sampled_actions[i]
-            self.w[action, :] -= coefficient * deltas[i] * sampled_states[:, i]
-            self.b[action] -= coefficient * deltas[i]
-
+        # TODO remove these lines - used for debugging purposes...
+        # TODO --------------------------------------------------
+        self.losses.append(loss)
         if round % 1000 == 0:
+            self.log("Q-Function network's loss = " + str(loss), 'VALUE')
+
             if round > self.game_duration - self.score_scope:
                 self.log("Rewards in last 1000 rounds which counts towards the score: " + str(self.reward_sum), 'VALUE')
             else:
@@ -352,19 +436,50 @@ class LinearQLearning(bp.Policy):
             self.reward_sum = 0
         else:
             self.reward_sum += reward
+        # TODO --------------------------------------------------
 
     def select_action(self, state):
-        state_vec = get_state_array(state, self.window_size, shape=(-1, 1), dtype=np.float32)
-        state_actions_values = np.dot(self.w, state_vec).flatten()
+        """
+        Select an action which maximizes Q(state,action) according to the Q-function model and the given state.
+        :param state: The state to select the action for.
+        :return: The selected action ('L', 'R' or 'F').
+        """
+        # Convert the state to the corresponding tensor.
+        state_array = get_state_array(state, self.window_size, dtype=np.float32)
 
+        # Add a batch dimension of size 1.
+        state_array = state_array.reshape(1, *state_array.shape)
+
+        # Calculate Q(state,action) for all actions.
+        state_actions_values = self.q_function.predict(state_array, batch_size=1).flatten()
+
+        # Select the action which maximizes Q(state,action).
         return bp.Policy.ACTIONS[np.argmax(state_actions_values)]
 
     def act(self, round, prev_state, prev_action, reward, new_state, too_slow):
+        # Do not add experiences containing None (this can happen in the first round of the game).
         if (prev_state is not None) and (prev_action is not None) and (reward is not None) and (new_state is not None):
             self.replay_memory.append(state=get_state_array(prev_state, self.window_size),
                                       action=bp.Policy.ACTIONS.index(prev_action),
                                       reward=reward,
                                       next_state=get_state_array(new_state, self.window_size))
+
+        # TODO remove these lines - used for debugging purposes...
+        # TODO --------------------------------------------------
+        self.rewards.append(reward)
+        if round == self.game_duration - 1:
+            time_str = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+            s = '{}-id{}'.format(self.agent_name, self.id)
+
+            out_dir = os.path.join('logs', time_str)
+            pathlib.Path(out_dir).mkdir(exist_ok=True)
+
+            np.array(self.losses, dtype=np.float32).tofile(os.path.join(out_dir, '{}_losses'.format(s)))
+            np.array(self.rewards, dtype=np.float32).tofile(os.path.join(out_dir, '{}_rewards'.format(s)))
+
+            with open(os.path.join(out_dir, '{}_params.json'.format(s)), 'w') as f:
+                json.dump({k: self.__dict__[k] for k in self.__dict__.keys() if k in DQN.params.keys()}, f)
+        # TODO --------------------------------------------------
 
         # Exploration, with probability epsilon.
         if np.random.rand() < self.curr_epsilon:
