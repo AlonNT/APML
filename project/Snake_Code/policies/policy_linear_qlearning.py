@@ -205,8 +205,8 @@ class LinearQLearning(bp.Policy):
     """
 
     params = {
-        'epsilon': 0.1,  # epsilon controls the exploration:
-                         # when acting, with probability epsilon select random action.
+        'epsilon': 0.25,  # epsilon controls the exploration:
+                          # when acting, with probability epsilon select random action.
 
         'decay_epsilon': True,  # How much to decay epsilon during the game.
                                 # The current epsilon will be initialized to epsilon, and decay linearly
@@ -215,11 +215,11 @@ class LinearQLearning(bp.Policy):
         'gamma': 0.95,  # gamma controls the reward decaying:
                         # how much to prefer current reward over future rewards.
 
-        'lr': 0.01,  # The learning-rate.
+        'lr': 0.02,  # The learning-rate.
 
         'decay_lr': 0,  # Decay the learning-rate by half, every decay_lr iterations (if 0 - do not decay at all).
 
-        'bs': 32,  # The mini-batch size to sample from the replay-memory
+        'bs': 64,  # The mini-batch size to sample from the replay-memory
                    # in each training iteration.
 
         'window_size': 13,  # The size of the squared window to take around the head of the snake.

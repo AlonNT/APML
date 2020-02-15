@@ -2,13 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="72190662-d97a-4238-a082-deda27fce1da" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/alonnetser.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/alonnetser.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/project/Snake_Code/game.log" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/game.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/project/Snake_Code/game.out" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/game.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/project/Snake_Code/policies/policy_avoid.py" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/policies/policy_avoid.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/policies/policy_dqn.py" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/policies/policy_dqn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/project/Snake_Code/policies/policy_linear_qlearning.py" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/policies/policy_linear_qlearning.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/project/Snake_Code/recordings/tmp.pkl" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -35,11 +31,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/project/Snake_Code/Snake.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="818">
-              <caret line="193" column="35" selection-start-line="193" selection-start-column="35" selection-end-line="193" selection-end-column="35" />
-              <folding>
-                <element signature="e#0#13#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="299">
+              <caret line="13" selection-start-line="13" selection-end-line="13" />
             </state>
           </provider>
         </entry>
@@ -47,10 +40,10 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/policy_linear_qlearning.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="507">
-              <caret line="224" column="25" selection-start-line="224" selection-start-column="25" selection-end-line="224" selection-end-column="25" />
+            <state relative-caret-position="384">
+              <caret line="331" column="62" selection-start-line="331" selection-start-column="62" selection-end-line="331" selection-end-column="62" />
               <folding>
-                <element signature="e#0#38#0" expanded="true" />
+                <element signature="e#60#117#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -59,11 +52,20 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/policy_dqn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="890">
-              <caret line="280" selection-start-line="280" selection-end-line="281" selection-end-column="68" />
+            <state relative-caret-position="4313">
+              <caret line="417" column="30" selection-start-line="417" selection-end-line="418" />
               <folding>
-                <element signature="e#0#38#0" expanded="true" />
+                <element signature="e#60#117#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/policy_avoid.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="671">
+              <caret line="52" selection-start-line="52" selection-end-line="52" />
             </state>
           </provider>
         </entry>
@@ -71,8 +73,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/project/Snake_Code/plot_graphs.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="971">
-              <caret line="69" column="28" selection-start-line="69" selection-start-column="28" selection-end-line="69" selection-end-column="28" />
+            <state relative-caret-position="115">
+              <caret line="70" column="36" selection-start-line="70" selection-start-column="25" selection-end-line="70" selection-end-column="36" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -83,8 +85,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/base_policy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="307">
-              <caret line="64" column="93" selection-start-line="64" selection-start-column="80" selection-end-line="64" selection-end-column="93" />
+            <state relative-caret-position="314">
+              <caret line="117" selection-start-line="117" selection-end-line="117" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -103,12 +105,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>self.b</find>
-      <find>build(</find>
-      <find>build</find>
-      <find>make</find>
-      <find>self.curr_lr</find>
-      <find>respon</find>
       <find>base_policy</find>
       <find>act</find>
       <find>keras</find>
@@ -119,7 +115,6 @@
       <find>train_on</find>
       <find>act(</find>
       <find>learn</find>
-      <find>game_duration</find>
       <find>fromfile</find>
       <find>datet</find>
       <find>plt.</find>
@@ -130,9 +125,16 @@
       <find>score</find>
       <find>rewards</find>
       <find>scores</find>
-      <find>find_e</find>
       <find>self.lr</find>
       <find>decay_lr</find>
+      <find>find_e</find>
+      <find>print</find>
+      <find>self.logq</find>
+      <find>Player</find>
+      <find>Round</find>
+      <find>window_size</find>
+      <find>game_duration</find>
+      <find>kill_snakes_reward</find>
     </findStrings>
     <replaceStrings>
       <replace>data</replace>
@@ -150,11 +152,11 @@
         <option value="$PROJECT_DIR$/ex1/operations.py" />
         <option value="$PROJECT_DIR$/ex4/Manifold_Learning.py" />
         <option value="$PROJECT_DIR$/project/Snake_Code/policies/policy_tmp.py" />
-        <option value="$PROJECT_DIR$/project/Snake_Code/policies/policy_avoid.py" />
-        <option value="$PROJECT_DIR$/project/Snake_Code/policies/base_policy.py" />
         <option value="$PROJECT_DIR$/project/plot.py" />
-        <option value="$PROJECT_DIR$/project/Snake_Code/Snake.py" />
         <option value="$PROJECT_DIR$/project/Snake_Code/plot_graphs.py" />
+        <option value="$PROJECT_DIR$/project/Snake_Code/policies/base_policy.py" />
+        <option value="$PROJECT_DIR$/project/Snake_Code/Snake.py" />
+        <option value="$PROJECT_DIR$/project/Snake_Code/policies/policy_avoid.py" />
         <option value="$PROJECT_DIR$/project/Snake_Code/policies/policy_dqn.py" />
         <option value="$PROJECT_DIR$/project/Snake_Code/policies/policy_linear_qlearning.py" />
       </list>
@@ -233,7 +235,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.plot_graphs">
+  <component name="RunManager" selected="Python.Snake">
     <configuration name="Clustering" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="APML" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -300,6 +302,25 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="Snake" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="APML" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/project/Snake_Code" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/project/Snake_Code/Snake.py" />
+      <option name="PARAMETERS" value="--policy_action_time 0.03 --policy_learn_time 0.05 --player_init_time 10 --policies &quot;DQN(kill_snakes_reward=10);Avoid();Avoid();Avoid();Avoid()&quot; --game_duration 10000 --score_scope 1000 --record_to ./recordings/kill.pkl" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="APML" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -326,6 +347,9 @@
       <module name="APML" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/project/Snake_Code/policies" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -345,6 +369,9 @@
       <module name="APML" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/project/Snake_Code" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -366,9 +393,11 @@
       <item itemvalue="Python.Clustering" />
       <item itemvalue="Python.Manifold_Learning" />
       <item itemvalue="Python.PoS Tagging" />
+      <item itemvalue="Python.Snake" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.Snake" />
         <item itemvalue="Python.base_policy" />
         <item itemvalue="Python.Manifold_Learning" />
         <item itemvalue="Python.Clustering" />
@@ -424,7 +453,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="303717000" />
+    <option name="totallyTimeSpent" value="328179000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -436,16 +465,16 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="2560" height="1440" extended-state="0" />
+    <frame x="0" y="0" width="1440" height="900" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.08975377" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.17453505" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32891566" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49928468" weight="0.4861314" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49928468" weight="0.40722892" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32771084" />
@@ -454,13 +483,13 @@
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50143063" side_tool="true" weight="0.43975905" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.32871288" />
-      <window_info anchor="bottom" id="Python Console" order="12" sideWeight="0.4985694" weight="0.4128713" />
+      <window_info anchor="bottom" id="Python Console" order="12" sideWeight="0.4985694" weight="0.48554218" />
       <window_info anchor="bottom" id="Jupyter" order="13" weight="0.32970297" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" x="0" y="0" width="310" height="609" id="Documentation" order="3" side_tool="true" weight="0.328541" />
-      <window_info anchor="right" id="SciView" order="4" weight="0.6432375" />
+      <window_info anchor="right" id="SciView" order="4" weight="0.78683835" />
       <window_info anchor="right" id="Database" order="5" weight="0.32832617" />
     </layout>
     <layout-to-restore>
@@ -532,6 +561,14 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <condition expression="len(list(indices_tuples)) &gt; 5" language="Python" />
+          <url>file://$PROJECT_DIR$/project/Snake_Code/policies/policy_dqn.py</url>
+          <line>266</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
@@ -546,10 +583,72 @@
     <SUITE FILE_PATH="coverage/APML$tests.coverage" NAME="tests Coverage Results" MODIFIED="1573659613112" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ex1" />
     <SUITE FILE_PATH="coverage/APML$train.coverage" NAME="train Coverage Results" MODIFIED="1573928882813" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ex1" />
     <SUITE FILE_PATH="coverage/APML$linear_regression.coverage" NAME="linear_regression Coverage Results" MODIFIED="1573928467300" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ex1" />
+    <SUITE FILE_PATH="coverage/APML$Snake.coverage" NAME="Snake Coverage Results" MODIFIED="1581775357096" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/project/Snake_Code" />
     <SUITE FILE_PATH="coverage/APML$operations.coverage" NAME="operations Coverage Results" MODIFIED="1573321559543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ex1/ex1-code" />
     <SUITE FILE_PATH="coverage/APML$PoS_Tagging.coverage" NAME="PoS Tagging Coverage Results" MODIFIED="1575907919356" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ex2" />
     <SUITE FILE_PATH="coverage/APML$Clustering.coverage" NAME="Clustering Coverage Results" MODIFIED="1576689565567" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ex3" />
     <SUITE FILE_PATH="coverage/APML$Manifold_Learning.coverage" NAME="Manifold_Learning Coverage Results" MODIFIED="1580668170967" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ex4" />
+  </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="breakpointCondition">
+      <expression>
+        <expression-string>len(list(indices_tuples)) &gt; 5</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>np.any(counts[1:] &gt; 5)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+    <expressions id="evaluateExpression">
+      <expression>
+        <expression-string>died_snake(prev_state, new_state, self.window_size)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>new_state</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>prev_action</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>reward</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>prev_action is not None</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>self.kill_snakes_reward</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>prev_state[0]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>state = prev_state[0]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>prev_state</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
   </component>
   <component name="editorHistoryManager">
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/sklearn/manifold/locally_linear.py">
@@ -775,16 +874,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/policy_avoid.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="325">
-          <caret line="34" column="61" lean-forward="true" selection-start-line="34" selection-start-column="61" selection-end-line="34" selection-end-column="61" />
-          <folding>
-            <element signature="e#0#38#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/_api/v1/summary/__init__.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -792,16 +881,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="328">
           <caret line="297" column="6" selection-start-line="297" selection-start-column="6" selection-end-line="297" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/base_policy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="307">
-          <caret line="64" column="93" selection-start-line="64" selection-start-column="80" selection-end-line="64" selection-end-column="93" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -868,16 +947,6 @@
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/scipy/signal/__init__.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/project/Snake_Code/Snake.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="818">
-          <caret line="193" column="35" selection-start-line="193" selection-start-column="35" selection-end-line="193" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/json/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-829">
@@ -899,32 +968,56 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/base_policy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="314">
+          <caret line="117" selection-start-line="117" selection-end-line="117" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/project/Snake_Code/Snake.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="299">
+          <caret line="13" selection-start-line="13" selection-end-line="13" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/project/Snake_Code/plot_graphs.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="971">
-          <caret line="69" column="28" selection-start-line="69" selection-start-column="28" selection-end-line="69" selection-end-column="28" />
+        <state relative-caret-position="115">
+          <caret line="70" column="36" selection-start-line="70" selection-start-column="25" selection-end-line="70" selection-end-column="36" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/policy_avoid.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="671">
+          <caret line="52" selection-start-line="52" selection-end-line="52" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/policy_dqn.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="890">
-          <caret line="280" selection-start-line="280" selection-end-line="281" selection-end-column="68" />
+        <state relative-caret-position="4313">
+          <caret line="417" column="30" selection-start-line="417" selection-end-line="418" />
           <folding>
-            <element signature="e#0#38#0" expanded="true" />
+            <element signature="e#60#117#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/policy_linear_qlearning.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="507">
-          <caret line="224" column="25" selection-start-line="224" selection-start-column="25" selection-end-line="224" selection-end-column="25" />
+        <state relative-caret-position="384">
+          <caret line="331" column="62" selection-start-line="331" selection-start-column="62" selection-end-line="331" selection-end-column="62" />
           <folding>
-            <element signature="e#0#38#0" expanded="true" />
+            <element signature="e#60#117#0" expanded="true" />
           </folding>
         </state>
       </provider>
