@@ -1,0 +1,1 @@
+{"agent_name": "positive-sw-0.5", "sampling_method": "positive_reward", "smallest_weight": 0.5, "epsilon": 0.1, "decay_epsilon": true, "gamma": 0.96, "bs": 32, "window_size": 13, "memory_size": 1000, "update_target_interval": 100}
