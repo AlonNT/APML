@@ -54,6 +54,24 @@ def get_window(board, position, head, window_size):
     return rotated_window
 
 
+def get_other_window(last_window, next_window, last_action):
+    """
+    Returns a tuple of the 2 windows the agent didn't choose to go to. For example, if we
+    had state s_t and the agent chose to go straight, the function will return the states s_t+1
+    for the case the agent chose to go right and for the case it chose to go left.
+    :param last_window: a numpy array indicating the state before the action
+    :param next_window: a numpy array indicating the state after the action
+    :param last_action: the action the snake took between the states
+    :return: tuple adjusted for appending into the replay memory
+    """
+    assert last_action != "F", "No symmetry if the snake went forward"
+    oposite_action = {"L":"R", "R":"L"}
+    prev_window = np.fliplr(last_window)
+    new_window = np.fliplr(next_window)
+    new_action = bp.Policy.ACTIONS.index(oposite_action[last_action])
+    return prev_window, new_action, new_window
+
+
 def get_window_3d(board, position, head, window_size):
     """
     Get a 3D stack of boolean windows, indicating the appearance of a certain object in a certain location.
@@ -65,12 +83,10 @@ def get_window_3d(board, position, head, window_size):
     """
     window = get_window(board, position, head, window_size)
     window_3d = np.empty(shape=(window_size, window_size, N_VALUES), dtype=np.bool)
-
     for value in range(FIRST_VALUE, FIRST_VALUE + N_VALUES):
         i = value - FIRST_VALUE
         window_3d[:, :, i] = (window == value)
-
-    return window_3d
+    return window_3d  
 
 
 def get_state_array(state, window_size, shape=None, dtype=None):
@@ -361,10 +377,18 @@ class LinearQLearning(bp.Policy):
 
     def act(self, round, prev_state, prev_action, reward, new_state, too_slow):
         if (prev_state is not None) and (prev_action is not None) and (reward is not None) and (new_state is not None):
-            self.replay_memory.append(state=get_state_array(prev_state, self.window_size),
+            prev_window = get_state_array(prev_state, self.window_size)
+            new_window = get_state_array(new_state, self.window_size)
+            self.replay_memory.append(state=prev_window,
                                       action=bp.Policy.ACTIONS.index(prev_action),
                                       reward=reward,
-                                      next_state=get_state_array(new_state, self.window_size))
+                                      next_state=new_window)
+            if prev_action != "F":  # we can use symmetries to add more experiences to the replay memory
+               sym_state, sym_action, sym_next = get_other_window(prev_window, new_window, prev_action)
+               self.replay_memory.append(state=sym_state,
+                                      action=sym_action,
+                                      reward=reward,
+                                      next_state=sym_next)
 
         # Exploration, with probability epsilon.
         if np.random.rand() < self.curr_epsilon:
