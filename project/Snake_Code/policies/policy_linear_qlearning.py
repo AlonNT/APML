@@ -56,7 +56,7 @@ def get_window(board, position, head, window_size):
 
 def get_other_window(last_window, next_window, last_action):
     """
-    Returns a tuple of the 2 windows the agent didn't choose to go to. For example, if we
+    Returns a tuple of symmetric window. For example, if we
     had state s_t and the agent chose to go straight, the function will return the states s_t+1
     for the case the agent chose to go right and for the case it chose to go left.
     :param last_window: a numpy array indicating the state before the action
