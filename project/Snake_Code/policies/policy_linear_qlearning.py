@@ -56,9 +56,9 @@ def get_window(board, position, head, window_size):
 
 def get_other_window(last_window, next_window, last_action):
     """
-    Returns a tuple of symmetric window. For example, if we
-    had state s_t and the agent chose to go straight, the function will return the states s_t+1
-    for the case the agent chose to go right and for the case it chose to go left.
+    Returns a tuple of the symmetric window. For example, if we
+    had state s_t and the agent chose to go left, the function will return the states s_t+1
+    for the case the agent chose to go right.
     :param last_window: a numpy array indicating the state before the action
     :param next_window: a numpy array indicating the state after the action
     :param last_action: the action the snake took between the states
