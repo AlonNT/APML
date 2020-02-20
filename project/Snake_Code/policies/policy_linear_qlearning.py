@@ -54,22 +54,7 @@ def get_window(board, position, head, window_size):
     return rotated_window
 
 
-def get_other_window(last_window, next_window, last_action):
-    """
-    Returns a tuple of the symmetric window. For example, if we
-    had state s_t and the agent chose to go left, the function will return the states s_t+1
-    for the case the agent chose to go right.
-    :param last_window: a numpy array indicating the state before the action
-    :param next_window: a numpy array indicating the state after the action
-    :param last_action: the action the snake took between the states
-    :return: tuple adjusted for appending into the replay memory
-    """
-    assert last_action != "F", "No symmetry if the snake went forward"
-    oposite_action = {"L":"R", "R":"L"}
-    prev_window = np.fliplr(last_window)
-    new_window = np.fliplr(next_window)
-    new_action = bp.Policy.ACTIONS.index(oposite_action[last_action])
-    return prev_window, new_action, new_window
+
 
 
 def get_window_3d(board, position, head, window_size):
@@ -110,6 +95,33 @@ def get_state_array(state, window_size, shape=None, dtype=None):
         state_array = state_array.astype(dtype)
 
     return state_array
+
+
+def get_symmetric_windows(prev_window, prev_action, new_window):
+    """
+    Calculates all the symmetric windows and returns a list containing tuples of the following structure:
+    (state, action, new_state), each one representing a rotation or a symmetry of the given windows.
+    :param prev_window: the state at time t
+    :param prev_action: the action the agent took
+    :param new_window: the state at time t+1 after prev_action was taken
+    :return: A list of tuples (state, action, new_state)
+
+    """
+    new_memories = list()
+    if prev_action == "F":  # we can use rotations       
+        new_memories.append((np.rot90(prev_window, 3),
+                             bp.Policy.ACTIONS.index("R"),
+                             new_window))
+        new_memories.append((np.rot90(prev_window, 1),
+                             bp.Policy.ACTIONS.index("L"),
+                             new_window))
+    else:  # we can use symmetry along the advancement axis
+        oposite_action = {"L":"R", "R":"L"}
+        new_memories.append((np.fliplr(prev_window),
+                             bp.Policy.ACTIONS.index(oposite_action[prev_action]),
+                             np.fliplr(new_window)))
+    
+    return new_memories
 
 
 class ReplayMemory:
@@ -383,8 +395,8 @@ class LinearQLearning(bp.Policy):
                                       action=bp.Policy.ACTIONS.index(prev_action),
                                       reward=reward,
                                       next_state=new_window)
-            if prev_action != "F":  # we can use symmetries to add more experiences to the replay memory
-               sym_state, sym_action, sym_next = get_other_window(prev_window, new_window, prev_action)
+            for memory in get_symmetric_windows(prev_window, prev_action, new_window):  # add all the symmetric memories
+               sym_state, sym_action, sym_next = memory  # unpack the tuple
                self.replay_memory.append(state=sym_state,
                                       action=sym_action,
                                       reward=reward,
@@ -396,3 +408,4 @@ class LinearQLearning(bp.Policy):
 
         # Exploitation, with probability (1 - epsilon).
         return self.select_action(new_state)
+
