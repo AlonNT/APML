@@ -101,6 +101,7 @@ class Agent(object):
         self.policy_class = policy
         self.round = 0
         self.unresponsive_count = 0
+        self.last_1000_unresponsive_count = 0
         self.too_slow = False
 
         self.sq = mp.Queue()
@@ -142,12 +143,16 @@ class Agent(object):
 
         except queue.Empty:
             self.unresponsive_count += 1
+            self.last_1000_unresponsive_count += 1
             action = base_policy.Policy.DEFAULT_ACTION
-            if self.unresponsive_count <= UNRESPONSIVE_THRESHOLD:
-                self.logq.put((str(self.id), "ERROR", NO_RESPONSE + str(self.unresponsive_count) + " in a row!"))
-            else:
-                self.logq.put((str(self.id), "ERROR", UNRESPONSIVE_PLAYER))
-                self.unresponsive_count = TOO_SLOW_THRESHOLD
+            if self.round % 1000 == 0:
+                # if self.unresponsive_count <= UNRESPONSIVE_THRESHOLD:
+                #     self.logq.put((str(self.id), "ERROR", NO_RESPONSE + str(self.unresponsive_count) + " in a row!"))
+                # else:
+                #     self.logq.put((str(self.id), "ERROR", UNRESPONSIVE_PLAYER))
+                #     self.unresponsive_count = TOO_SLOW_THRESHOLD
+                self.logq.put((str(self.id), "ERROR", str(self.last_1000_unresponsive_count) + "/1000 no-responses."))
+                self.last_1000_unresponsive_count = 0
             if self.unresponsive_count > TOO_SLOW_THRESHOLD:
                 self.too_slow = True
 

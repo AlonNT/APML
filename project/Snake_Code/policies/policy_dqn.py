@@ -30,8 +30,6 @@ def get_window(board, position, head, window_size):
     :param window_size: An odd integer describing the window size.
     :return: The window, which is a NumPy array of shape (window_size, window_size).
     """
-    assert window_size % 2 == 1, "window_size should be odd (to enable putting the head in the center)."
-
     board_width, board_height = board.shape
     center_x = position[0]
     center_y = position[1]
@@ -112,19 +110,37 @@ class ReplayMemory:
     and enables sampling from them and appending efficiently.
     """
 
-    def __init__(self, state_shape, max_size, sampling_method='uniform', smallest_weight=0.01):
+    def __init__(self, state_shape, max_size, game_duration, sampling_method='uniform', smallest_weight=0.01,
+                 prioritized_memory=False, epsilon=0.01, alpha=0.6, beta_0=0.4):
         """
         Initialize the object with empty NumPy arrays of the given sizes.
-        :param max_size: The maximal number of experiences to hold.
         :param state_shape: The shape of the state, e.g. (window_size, window_size, N_VALUES).
+        :param max_size: The maximal number of experiences to hold.
+        :param game_duration: The duration of the game.
+                              Used to anneal beta linearly from beta_0 (at round #1) to 1 (at round #game_duration).
+
         :param sampling_method: How to sample the mini-batch of experiences from the memory.
                                 Should be a string in {'uniform', 'nonzero_reward', 'positive_reward'}.
         :param smallest_weight: The smallest weight (which is then converted to probability) to give the experiences
                                 we wish to sample less (or not at all, if it's 0).
+
+        :param prioritized_memory: Whether to use Prioritized Experience Memory or not.
+                                   The following arguments are hyper-parameters of the memory.
+        :param epsilon: If prioritized_memory is True, this value indicates the amount to add to the absolute deltas in
+                        order to avoid not sampling at all from experiences that have low delta.
+                        This value's default is 0.01, following the original paper.
+        :param alpha: If prioritized_memory is True, this value (between 0 and 1) indicates the exponent to raise the
+                      priorities in order to obtain probabilities.
+                      When this value is 0 it means no prioritization is done (a.k.a. uniform sampling).
+                      This value's default is 0.6, following the original paper.
+        :param beta_0: If prioritized_memory is True, this value (between 0 and 1) indicates the exponent to raise the
+                       sample-weights (or "importance-sampling" as stated in the original paper).
+                       This value's default is 0.4, following the original paper.
         """
         self.max_size = max_size
         self.sampling_method = sampling_method
         self.smallest_weight = smallest_weight
+        self.game_duration = game_duration
 
         # This is the current size of the ReplayMemory, which is 0 at the beginning until it reaches max_size.
         self.size = 0
@@ -139,11 +155,20 @@ class ReplayMemory:
         self.rewards = np.empty(shape=(max_size,), dtype=np.float32)
         self.next_states = np.empty(shape=(max_size,) + state_shape, dtype=np.bool)
 
+        self.prioritized_memory = prioritized_memory
+
+        self.deltas = np.zeros(shape=(max_size,), dtype=np.float32) if prioritized_memory else None
+        self.epsilon = epsilon if prioritized_memory else None
+        self.alpha = alpha if prioritized_memory else None
+        self.beta_0 = beta_0 if prioritized_memory else None
+
     def append(self, state, action, reward, next_state):
         """
         Append a new experience to the memory.
         The new experience is stored at the curr_index, which means it replaces the experience that was already there.
         Therefore this data-structure mimics a queue (first-in-first-out).
+        If we use a Prioritized Experience Memory, this experience is added with maximal delta
+        (to make sure it will be sampled at least once, and its delta will be updated accordingly).
         :param state: The state.
         :param action: The action.
         :param reward: The resulting reward.
@@ -154,8 +179,15 @@ class ReplayMemory:
         self.rewards[self.curr_index] = reward
         self.next_states[self.curr_index] = next_state
 
-        self.size = min(self.size + 1, self.max_size)
+        # If we use a Prioritized Experience Memory, this experience is added with maximal delta
+        # (to make sure it will be sampled at least once, and its delta will be updated accordingly).
+        if self.prioritized_memory:
+            # max with epsilon to avoid being zero in the beginning of the learning
+            # (when all deltas are zero since they were not updated yet).
+            self.deltas[self.curr_index] = max(self.deltas.max(), self.epsilon)
+
         self.curr_index = (self.curr_index + 1) % self.max_size
+        self.size = min(self.size + 1, self.max_size)
 
     def get_probabilities(self):
         """
@@ -169,7 +201,7 @@ class ReplayMemory:
             weights[self.rewards[:self.size] == 0] = self.smallest_weight
         elif self.sampling_method == 'positive_reward':
             weights[self.rewards[:self.size] <= 0] = self.smallest_weight
-        elif not self.sampling_method == 'uniform':
+        else:
             raise ValueError("Unknown sampling_method given to ReplayMemory ({}).".format(self.sampling_method))
 
         weights_sum = weights.sum()
@@ -181,37 +213,87 @@ class ReplayMemory:
         else:
             return np.ones(shape=self.size, dtype=np.float32) / self.size
 
-    def sample(self, sample_size):
+    def get_prioritized_probabilities(self, round_number):
+        """
+        Get a vector of probabilities to sample the mini-batch,
+        according to the sampling-method the object was initialized with.
+        :param round_number: The round number.
+                             Used to anneal beta linearly from beta_0 (at round #1) to 1 (at round #game_duration).
+        :return: A probability vector and weights vector, both with self.size dimensions,
+        """
+        # Anneal beta linearly from beta_0 (at round #1) to 1 (at round #game_duration).
+        beta = self.beta_0 + round_number * ((1 - self.beta_0) / self.game_duration)
+
+        # Initialize the priorities to be the deltas up to the current size of the memory.
+        priorities = self.deltas[:self.size]
+
+        # Add epsilon in order to avoid not sampling at all from experiences that have low delta,
+        # and raise to the power of alpha.
+        priorities_pow_alpha = (priorities + self.epsilon) ** self.alpha
+
+        # Normalize it to be a probabilities vector.
+        # Note that the sum will never be 0 because we add epsilon which is positive.
+        probabilities = priorities_pow_alpha / priorities_pow_alpha.sum()
+
+        # Define the sample-weights (or "importance-sampling" as stated in the original paper).
+        weights = (self.size * probabilities) ** (-beta)
+
+        # Normalize it to be a probabilities vector.
+        weights /= weights.max()
+
+        return probabilities, weights
+
+    def update_deltas(self, indices, deltas):
+        """
+        Update the deltas of the experiences in the corresponding indices.
+        :param indices: The indices of the experiences.
+        :param deltas: The new deltas to update.
+        """
+        self.deltas[indices] = deltas
+
+    def sample(self, sample_size, round_number):
         """
         Sample a mini-batch of experiences from the memory.
-        As long as there are some experiences the sampling is possible (because it's done with replacements).
-        However, it's not possible to call this method with an empty memory (i.e. self.size == 0).
+        The sampling is done according to the parameters that this memory was initialized with.
+        It can be sampling more from positive/non-zero rewards, or according to the prioritized memory approach.
         :param sample_size: The size of the mini-batch to sample.
-        :return: A tuple with four elements, each containing a mini-batch of the corresponding variable
-                 (state, action, reward and next-state).
+        :param round_number: The round number.
+                             Used to anneal beta linearly from beta_0 (at round #1) to 1 (at round #game_duration).
+        :return: A tuple with 6 elements.
+                 The first 4 are the mini-batch (state, action, reward and next-state).
+                 The last 2 are the indices of the sampled experiences, as well as sample-weight.
+                 The last 2 values are used for the prioritized memory approach.
         """
-        assert self.size > 0, "Can not sample from an empty ReplayMemory."
+        weights = None
 
-        indices = np.random.choice(self.size, size=sample_size, p=self.get_probabilities())
+        if self.prioritized_memory:
+            probabilities, weights = self.get_prioritized_probabilities(round_number)
+            indices = np.random.choice(self.size, size=sample_size, p=probabilities)
+        elif self.sampling_method == 'uniform':
+            indices = np.random.choice(self.size, size=sample_size)
+        else:
+            probabilities = self.get_probabilities()
+            indices = np.random.choice(self.size, size=sample_size, p=probabilities)
 
         sampled_states = self.states[indices]
         sampled_actions = self.actions[indices]
         sampled_rewards = self.rewards[indices]
         sampled_next_states = self.next_states[indices]
 
-        return sampled_states, sampled_actions, sampled_rewards, sampled_next_states
+        return sampled_states, sampled_actions, sampled_rewards, sampled_next_states, indices, weights
 
     def __len__(self):
         """
-        :return: The length of the memory, which is the amount of experiences in it (which is different from max_size).
+        :return: The length of the memory, which is the amount of experiences in it
+        (which is different from max_size at the beginning of the training, until it reaches max_size).
         """
         return self.size
 
 
 def get_window_pair(state, next_state, window_size):
     """
-    Returns two windows, from previous and current state,
-    centered at the player's head at the previous state head & direction.
+    Returns two windows, from the previous and the current round,
+    centered at the player's head at the previous round.
     :param state: The previous state, containing the board and the head.
     :param next_state: The next state, containing the board and the head.
     :param window_size: The size of the window.
@@ -231,18 +313,23 @@ def get_window_pair(state, next_state, window_size):
 def died_snake(state, next_state, window_size, player_id):
     """
     Checks if another snake died when touching the player's snake
-    between the previous state and the current one.
+    between the previous round and the current one.
     :param state: The previous state, containing the board and the head.
     :param next_state: The next state, containing the board and the head.
     :param window_size: The size of the window.
     :param player_id: The id if the player, to ignore changes involving the player's snake.
     :return: True if another snake died crashing on the player's snake, False otherwise.
     """
+    # The size of the minimal snake - this will define the size of a 'chain' of cells with the same values
+    # to be regarded as a snake. This is set to 3 because in the original version of the game, snakes are initialized
+    # with size 3, and if it'll change it will not be a disaster...
+    minimal_snake_length = 3
+
     window, next_window = get_window_pair(state, next_state, window_size)
     n_rows, n_cols = window.shape
 
     # Create a mask indicating where is the player's snake.
-    player_location = (window == player_id)
+    player_location = (next_window == player_id)
 
     # Create a mask indicating the differences between the window in the current state and the previous one.
     diffs = (window != next_window) & (window != player_id) & (next_window != player_id)
@@ -251,8 +338,8 @@ def died_snake(state, next_state, window_size, player_id):
     # and two vertices are connected if they are at the left/right/bottom/top of each other.
 
     # Ignore isolated vertices - cells containing 1 but none of the neighbors contain 1.
-    diffs &= (np.roll(diffs, shift=1, axis=1) | np.roll(diffs, shift=-1, axis=1) |
-              np.roll(diffs, shift=1, axis=0) | np.roll(diffs, shift=-1, axis=0))
+    diffs[1:-1, 1:-1] &= (np.roll(diffs, shift=1, axis=1)[1:-1, 1:-1] | np.roll(diffs, shift=-1, axis=1)[1:-1, 1:-1] |
+                          np.roll(diffs, shift=1, axis=0)[1:-1, 1:-1] | np.roll(diffs, shift=-1, axis=0)[1:-1, 1:-1])
 
     # Find the indices where there are ones that are connected to others
     # (i.e. they belong to a connected-component of size at least 2).
@@ -276,7 +363,7 @@ def died_snake(state, next_state, window_size, player_id):
         connected_component_size = 0
         touching_player = False     # Will be True if the any vertex is neighbor to the player's snake.
 
-        # Store the next vertices to process in a stack, therefore performing depth-first-search.
+        # Store the next vertices to process in a stack, therefore performing depth-first-search (DFS).
         stack = [(i, j)]
         while len(stack) > 0:
             row, col = stack.pop()
@@ -305,7 +392,7 @@ def died_snake(state, next_state, window_size, player_id):
 
             # If the connected-component size is greater than the size of a snake, and one of the vertices
             # is neighbor to the player's snake, return True.
-            if connected_component_size >= 4 and touching_player:
+            if connected_component_size >= minimal_snake_length and touching_player:
                 return True
 
     return False    # No sufficiently big connected-component touching the player was found.
@@ -387,13 +474,14 @@ class DQN(bp.Policy):
         # https://arxiv.org/pdf/1509.06461.pdf
         'double_dqn': True,
 
-        # If it's greater than 0, give a reward when another snake dies on our snake.
-        'kill_snakes_reward': 0,
+        # Whether to implement Prioritized-Experience-Memory.
+        # Reference:
+        # "PRIORITIZED EXPERIENCE REPLAY"
+        # https://arxiv.org/pdf/1511.05952.pdf
+        'prioritized_memory': False,
 
-        # TODO remove these lines - used for debugging purposes...
-        # TODO --------------------------------------------------
-        'agent_name': ''
-        # TODO --------------------------------------------------
+        # If it's greater than 0, give a reward when another snake dies crashing on our snake.
+        'kill_snakes_reward': 0,
     }
 
     def cast_string_args(self, policy_args):
@@ -417,7 +505,7 @@ class DQN(bp.Policy):
         # TODO --------------------------------------------------
         self.rewards = list()
         self.losses = list()
-
+        self.kills = list()
         # This is the sum of rewards among the last iterations, in order to print.
         self.reward_sum = 0
         # TODO --------------------------------------------------
@@ -432,8 +520,10 @@ class DQN(bp.Policy):
         # This is the replay-memory containing the past experiences (up to a maximal size).
         self.replay_memory = ReplayMemory(state_shape=(self.window_size, self.window_size, N_VALUES),
                                           max_size=self.memory_size,
+                                          game_duration=self.game_duration,
                                           sampling_method=self.sampling_method,
-                                          smallest_weight=self.smallest_weight)
+                                          smallest_weight=self.smallest_weight,
+                                          prioritized_memory=self.prioritized_memory)
 
         # Initialize the two Q-functions - one is the actual Q-function to be learned, and the second is the target
         # Q-function that will be fixed and its weights will be updated every self.update_target_interval iterations.
@@ -459,6 +549,8 @@ class DQN(bp.Policy):
             # they are random initial weights so it does not really matter)
             model.train_on_batch(x=dummy_samples, y=dummy_targets)
 
+        self.target_function.set_weights(self.q_function.get_weights())
+
     def adjust_epsilon(self, curr_round):
         """
         Adjust the current epsilon according to the game's round number.
@@ -473,9 +565,68 @@ class DQN(bp.Policy):
         else:
             # If the current round number is smaller than the number of exploration steps,
             # set the current epsilon to do down linearly from the its initial value to 0.
-            self.curr_epsilon = self.epsilon * (1 - float(curr_round) / float(self.exploration_steps))
+            self.curr_epsilon = self.epsilon * (1 - (float(curr_round) / float(self.exploration_steps)))
 
-    def get_training_batch(self):
+    def get_inputs_and_targets(self, states, actions, rewards, next_states):
+        """
+        Return the inputs and the targets in order to feed the neural-network.
+        It also returns the prediction of the current model (self.q_function) on the previous-states, because it
+        calculates these prediction anyway (to build the targets)
+        and other might use this (i.e. the prioritized-memory).
+        :param states: The current states.
+        :param actions: The actions that were taken in the current states.
+        :param rewards: The rewards received.
+        :param next_states: The next states obtained.
+        :return: Three NumPy arrays, the first is the inputs (current states arrays) the second is the targets
+                 (target for the output of the model, which is of shape batch-size x N_ACTIONS), and the third
+                 is the prediction of the model (shape batch-size x N_ACTIONS).
+        """
+        # # Add a batch dimension of size 1 to states and next_states, if they have less than 4 dimensions
+        # # (meaning this function is called with a single experience and not a mini-batch of experiences).
+        # if states.ndim < 4:
+        #     states = states.reshape(1, *states.shape)
+        # if next_states.ndim < 4:
+        #     next_states = next_states.reshape(1, *next_states.shape)
+        # actions = np.atleast_1d(actions)    # If actions is a scalar, convert it to a NumPy array of dimension 1.
+        # rewards = np.atleast_1d(rewards)    # If rewards is a scalar, convert it to a NumPy array of dimension 1.
+
+        batch_size = states.shape[0]
+
+        # Convert the states to float32 to feed the models.
+        states = states.astype(np.float32)
+        next_states = next_states.astype(np.float32)
+
+        # Get Q(s_{t+1},a) for all actions a, according to the target Q-function.
+        next_states_actions_target_values = self.target_function.predict(next_states, batch_size)
+
+        if self.double_dqn:
+            # Use the Q-function to select the greedy action - the action which maximizes the state-action value.
+            next_states_actions_q_values = self.q_function.predict(next_states, batch_size)
+            next_states_argmax_action_value = next_states_actions_q_values.argmax(axis=1)
+
+            # Evaluate the state-action value on this action using the target network.
+            next_states_max_action_value = next_states_actions_target_values[np.arange(batch_size),
+                                                                             next_states_argmax_action_value]
+        else:
+            # Get the maximal Q(s_{t+1},a) for an action a'.
+            next_states_max_action_value = next_states_actions_target_values.max(axis=1)
+
+        # First predict using the Q-function on the current states.
+        states_actions_target_values = self.q_function.predict(states, batch_size)
+
+        # Initialize the targets tensor to be the output of the q-function model.
+        targets = np.copy(states_actions_target_values)
+
+        # For each training-sample, adjust the label of the corresponding action accordingly
+        # (see the function's documentation for more details).
+        targets[np.arange(batch_size), actions] = rewards + self.gamma * next_states_max_action_value
+
+        # Convert the targets tensor to float32, to feed to the model.
+        targets = targets.astype(np.float32)
+
+        return states, targets, states_actions_target_values
+
+    def get_training_batch(self, round_number):
         """
         Sample a mini-batch of experiences from the replay-memory, and adjust the tensors accordingly
         to enable feeding them to the model without further processing.
@@ -489,41 +640,19 @@ class DQN(bp.Policy):
                 (-) The corresponding reward (which is the reward that was given to the agent in that state when
                     performing the action).
                 (-) The maximal Q(s_{t+1},a') for action a' (according to the target Q-function) multiplied by gamma.
-        :return: Two NumPy arrays, one is the input to the model and the other is the labels,
+        :return: Five NumPy arrays.
+                 The first is the inputs to the model.
+                 The second is the labels.
+                 The third is the indices of the experiences sampled from the memory.
+                 The forth is sample-weights of this mini-batch.
+                 The fifth is the prediction of the current model on the inputs (used in the prioritized-memory).
         """
         # Get a mini-batch of states, action, rewards and next_states from the replay-memory.
-        states, actions, rewards, next_states = self.replay_memory.sample(self.bs)
+        states, actions, rewards, next_states, indices, weights = self.replay_memory.sample(self.bs, round_number)
 
-        # Convert the states to float32 to feed the models.
-        states = states.astype(np.float32)
-        next_states = next_states.astype(np.float32)
+        inputs, targets, predictions = self.get_inputs_and_targets(states, actions, rewards, next_states)
 
-        # Get Q(s_{t+1},a) for all actions a, according to the target Q-function.
-        next_states_actions_target_values = self.target_function.predict(next_states)
-
-        if self.double_dqn:
-            # Use the Q-function to select the greedy action - the action which maximizes the state-action value.
-            next_states_actions_q_values = self.q_function.predict(next_states)
-            next_states_argmax_action_value = next_states_actions_q_values.argmax(axis=1)
-
-            # Evaluate the state-action value on this action using the target network.
-            next_states_max_action_value = next_states_actions_target_values[np.arange(self.bs),
-                                                                             next_states_argmax_action_value]
-        else:
-            # Get the maximal Q(s_{t+1},a) for an action a'.
-            next_states_max_action_value = next_states_actions_target_values.max(axis=1)
-
-        # Initialize the targets tensor to be the output of the q-function model.
-        targets = self.q_function.predict(states)
-
-        # For each training-sample, adjust the label of the corresponding action accordingly
-        # (see the function's documentation for more details).
-        targets[np.arange(self.bs), actions] = rewards + self.gamma * next_states_max_action_value
-
-        # Convert the targets tensor to float32, to feed to the model.
-        targets = targets.astype(np.float32)
-
-        return states, targets
+        return inputs, targets, indices, weights, predictions
 
     def learn(self, round, prev_state, prev_action, reward, new_state, too_slow):
         if self.decay_epsilon:
@@ -533,8 +662,23 @@ class DQN(bp.Policy):
         # Should not happen, but it might if the agent's learn function will be called at the beginning of the game.
         if len(self.replay_memory) > 0:
             # Get a mini-batch of experiences and train the Q-function model on this mini-batch.
-            inputs, targets = self.get_training_batch()
-            loss = self.q_function.train_on_batch(inputs, targets)
+            inputs, targets, indices, weights, predictions = self.get_training_batch(round)
+
+            # If we use prioritized-memory, we need to train with the corresponding sample_weight.
+            train_kwargs = {'sample_weight': weights[indices]} if self.prioritized_memory else dict()
+            loss = self.q_function.train_on_batch(inputs, targets, **train_kwargs)
+            # TODO remove these lines - used for debugging purposes...
+            # TODO --------------------------------------------------
+            self.losses.append(loss)
+            # TODO --------------------------------------------------
+
+            # If we use prioritized-memory, update the deltas
+            # (Temporal-Difference errors, which contributes to the priority of the experiences).
+            if self.prioritized_memory:
+                deltas = np.sum(np.abs(predictions - targets), axis=1)
+                self.replay_memory.update_deltas(indices, deltas)
+                # TODO why like this? Maybe because the sample_weight given to the train_on_batch function?
+                # assert abs(loss - np.mean(deltas ** 2)) < 0.0001, "Wrong calculation of the loss."
 
         # Every self.update_target_interval iterations,
         # update the target Q-function network weights to match the Q-function weights.
@@ -543,10 +687,8 @@ class DQN(bp.Policy):
 
         # TODO remove these lines - used for debugging purposes...
         # TODO --------------------------------------------------
-        self.losses.append(loss)
         if round % 1000 == 0:
-            self.log("Q-Function network's loss = " + str(loss), 'VALUE')
-
+            # self.log("Q-Function network's loss = " + str(loss), 'VALUE')
             if round > self.game_duration - self.score_scope:
                 self.log("Rewards in last 1000 rounds which counts towards the score: " + str(self.reward_sum), 'VALUE')
             else:
@@ -576,30 +718,39 @@ class DQN(bp.Policy):
         return bp.Policy.ACTIONS[np.argmax(state_actions_values)]
 
     def act(self, round, prev_state, prev_action, reward, new_state, too_slow):
-        # Do not add experiences containing None (this can happen in the first round of the game).
-        if (prev_state is not None) and (prev_action is not None) and (reward is not None) and (new_state is not None):
+        # If the given experience contains None (this can happen in the first round of the game),
+        # return a random action.
+        if (prev_state is None) or (prev_action is None) or (reward is None) or (new_state is None):
+            return np.random.choice(bp.Policy.ACTIONS)
 
-            if (self.kill_snakes_reward > 0) and died_snake(prev_state, new_state, 20, self.id):
-                self.log("I killed a snake!", 'VALUE')
-                reward += self.kill_snakes_reward
+        killed_snake = False
 
-            self.replay_memory.append(state=get_state_array(prev_state, self.window_size),
-                                      action=bp.Policy.ACTIONS.index(prev_action),
-                                      reward=reward,
-                                      next_state=get_state_array(new_state, self.window_size))
+        if (self.kill_snakes_reward > 0) and died_snake(prev_state, new_state, self.window_size, self.id):
+        # if died_snake(prev_state, new_state, self.window_size, self.id):
+            # self.log("I killed a snake!", 'VALUE')
+            reward += self.kill_snakes_reward
+            killed_snake = True
+
+        prev_state_array = get_state_array(prev_state, self.window_size)
+        new_state_array = get_state_array(new_state, self.window_size)
+        action_index = bp.Policy.ACTIONS.index(prev_action)
+
+        self.replay_memory.append(prev_state_array, action_index, reward, new_state_array)
 
         # TODO remove these lines - used for debugging purposes...
         # TODO --------------------------------------------------
-        self.rewards.append(reward)
+        self.rewards.append(reward if not killed_snake else reward - self.kill_snakes_reward)
+        self.kills.append(killed_snake)
         if round == self.game_duration - 1:
             time_str = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-            s = '{}-id{}'.format(self.agent_name, self.id)
+            s = 'id{}'.format(self.id)
 
             out_dir = os.path.join('logs', time_str)
             pathlib.Path(out_dir).mkdir(exist_ok=True)
 
             np.array(self.losses, dtype=np.float32).tofile(os.path.join(out_dir, '{}_losses'.format(s)))
             np.array(self.rewards, dtype=np.float32).tofile(os.path.join(out_dir, '{}_rewards'.format(s)))
+            np.array(self.kills, dtype=np.float32).tofile(os.path.join(out_dir, '{}_kills'.format(s)))
 
             with open(os.path.join(out_dir, '{}_params.json'.format(s)), 'w') as f:
                 json.dump({k: self.__dict__[k] for k in self.__dict__.keys() if k in DQN.params.keys()}, f)
