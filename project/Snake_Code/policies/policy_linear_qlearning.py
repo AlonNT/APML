@@ -54,6 +54,9 @@ def get_window(board, position, head, window_size):
     return rotated_window
 
 
+
+
+
 def get_window_3d(board, position, head, window_size):
     """
     Get a 3D stack of boolean windows, indicating the appearance of a certain object in a certain location.
@@ -65,12 +68,10 @@ def get_window_3d(board, position, head, window_size):
     """
     window = get_window(board, position, head, window_size)
     window_3d = np.empty(shape=(window_size, window_size, N_VALUES), dtype=np.bool)
-
     for value in range(FIRST_VALUE, FIRST_VALUE + N_VALUES):
         i = value - FIRST_VALUE
         window_3d[:, :, i] = (window == value)
-
-    return window_3d
+    return window_3d  
 
 
 def get_state_array(state, window_size, shape=None, dtype=None):
@@ -94,6 +95,33 @@ def get_state_array(state, window_size, shape=None, dtype=None):
         state_array = state_array.astype(dtype)
 
     return state_array
+
+
+def get_symmetric_windows(prev_window, prev_action, new_window):
+    """
+    Calculates all the symmetric windows and returns a list containing tuples of the following structure:
+    (state, action, new_state), each one representing a rotation or a symmetry of the given windows.
+    :param prev_window: the state at time t
+    :param prev_action: the action the agent took
+    :param new_window: the state at time t+1 after prev_action was taken
+    :return: A list of tuples (state, action, new_state)
+
+    """
+    new_memories = list()
+    if prev_action == "F":  # we can use rotations       
+        new_memories.append((np.rot90(prev_window, 3),
+                             bp.Policy.ACTIONS.index("R"),
+                             new_window))
+        new_memories.append((np.rot90(prev_window, 1),
+                             bp.Policy.ACTIONS.index("L"),
+                             new_window))
+    else:  # we can use symmetry along the advancement axis
+        oposite_action = {"L":"R", "R":"L"}
+        new_memories.append((np.fliplr(prev_window),
+                             bp.Policy.ACTIONS.index(oposite_action[prev_action]),
+                             np.fliplr(new_window)))
+    
+    return new_memories
 
 
 class ReplayMemory:
@@ -361,10 +389,18 @@ class LinearQLearning(bp.Policy):
 
     def act(self, round, prev_state, prev_action, reward, new_state, too_slow):
         if (prev_state is not None) and (prev_action is not None) and (reward is not None) and (new_state is not None):
-            self.replay_memory.append(state=get_state_array(prev_state, self.window_size),
+            prev_window = get_state_array(prev_state, self.window_size)
+            new_window = get_state_array(new_state, self.window_size)
+            self.replay_memory.append(state=prev_window,
                                       action=bp.Policy.ACTIONS.index(prev_action),
                                       reward=reward,
-                                      next_state=get_state_array(new_state, self.window_size))
+                                      next_state=new_window)
+            for memory in get_symmetric_windows(prev_window, prev_action, new_window):  # add all the symmetric memories
+               sym_state, sym_action, sym_next = memory  # unpack the tuple
+               self.replay_memory.append(state=sym_state,
+                                      action=sym_action,
+                                      reward=reward,
+                                      next_state=sym_next)
 
         # Exploration, with probability epsilon.
         if np.random.rand() < self.curr_epsilon:
@@ -372,3 +408,4 @@ class LinearQLearning(bp.Policy):
 
         # Exploitation, with probability (1 - epsilon).
         return self.select_action(new_state)
+
