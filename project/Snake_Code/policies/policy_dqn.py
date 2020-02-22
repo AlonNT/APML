@@ -525,7 +525,7 @@ class DQN(bp.Policy):
     params = {
         # epsilon controls the exploration:
         # when acting, with probability epsilon select random action.
-        'epsilon': 0.25,
+        'epsilon': 0.5,
 
         # How much to decay epsilon during the game.
         # The current epsilon will be initialized to epsilon, and decay linearly
@@ -541,10 +541,10 @@ class DQN(bp.Policy):
         'bs': 32,
 
         # The learning-rate to initialize the Adam optimizer with.
-        'lr': 0.001,
+        'lr': 0.0005,
 
         # How many times to decay the learning-rate.
-        'lr_n_changes': 0,
+        'lr_n_changes': 2,
 
         # The factor to decay the learning-rate each time.
         'lr_decay_factor': 0.5,
@@ -561,7 +561,7 @@ class DQN(bp.Policy):
         'kernel_size': 3,
 
         # The size of the squared window to take around the head of the snake.
-        'window_size': 13,
+        'window_size': 17,
 
         # The size of the replay-memory - how many past experiences to keep.
         'memory_size': 1000,
@@ -719,15 +719,6 @@ class DQN(bp.Policy):
                  (target for the output of the model, which is of shape batch-size x N_ACTIONS), and the third
                  is the prediction of the model (shape batch-size x N_ACTIONS).
         """
-        # # Add a batch dimension of size 1 to states and next_states, if they have less than 4 dimensions
-        # # (meaning this function is called with a single experience and not a mini-batch of experiences).
-        # if states.ndim < 4:
-        #     states = states.reshape(1, *states.shape)
-        # if next_states.ndim < 4:
-        #     next_states = next_states.reshape(1, *next_states.shape)
-        # actions = np.atleast_1d(actions)    # If actions is a scalar, convert it to a NumPy array of dimension 1.
-        # rewards = np.atleast_1d(rewards)    # If rewards is a scalar, convert it to a NumPy array of dimension 1.
-
         batch_size = states.shape[0]
 
         # Convert the states to float32 to feed the models.
@@ -890,7 +881,12 @@ class DQN(bp.Policy):
             s = 'id{}'.format(self.id)
 
             out_dir = os.path.join('logs', time_str)
-            pathlib.Path(out_dir).mkdir(exist_ok=True)
+
+            try:
+                os.makedirs(out_dir)
+            except OSError:
+                if not os.path.isdir(out_dir):
+                    raise
 
             np.array(self.losses, dtype=np.float32).tofile(os.path.join(out_dir, '{}_losses'.format(s)))
             np.array(self.rewards, dtype=np.float32).tofile(os.path.join(out_dir, '{}_rewards'.format(s)))
