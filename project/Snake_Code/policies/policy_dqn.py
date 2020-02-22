@@ -104,6 +104,34 @@ def get_state_array(state, window_size, shape=None, dtype=None):
     return state_array
 
 
+def get_symmetric_windows(prev_window, prev_action, new_window):
+    """
+    Calculates all the symmetric windows and returns a list containing tuples of the following structure:
+    (state, action, new_state), each one representing a rotation or a symmetry of the given windows.
+    :param prev_window: the state at time t
+    :param prev_action: the action the agent took
+    :param new_window: the state at time t+1 after prev_action was taken
+    :return: A list of tuples (state, action, new_state)
+
+    """
+    new_memories = list()
+
+    if prev_action == "F":  # we can use rotations
+        new_memories.append((np.rot90(prev_window, 3),
+                             bp.Policy.ACTIONS.index("R"),
+                             new_window))
+        new_memories.append((np.rot90(prev_window, 1),
+                             bp.Policy.ACTIONS.index("L"),
+                             new_window))
+    else:  # we can use symmetry along the advancement axis
+        opposite_action = {"L": "R", "R": "L"}
+        new_memories.append((np.fliplr(prev_window),
+                             bp.Policy.ACTIONS.index(opposite_action[prev_action]),
+                             np.fliplr(new_window)))
+
+    return new_memories
+
+
 class ReplayMemory:
     """
     This class represents the Replay-Memory, which holds the last N experiences of the game,
@@ -398,18 +426,78 @@ def died_snake(state, next_state, window_size, player_id):
     return False    # No sufficiently big connected-component touching the player was found.
 
 
+class DuelQFunction(keras.Model):
+    """
+    A model trying to approximate the Q-function for every action a, given a state as an input.
+    """
+
+    def __init__(self,
+                 conv1_channels, conv1_kernel_size,
+                 conv2_channels, conv2_kernel_size,
+                 conv3_channels, conv3_kernel_size,
+                 affine_channels):
+        super(DuelQFunction, self).__init__()
+        self.conv1 = keras.layers.Conv2D(filters=conv1_channels, kernel_size=conv1_kernel_size, activation='relu')
+        self.conv2 = keras.layers.Conv2D(filters=conv2_channels, kernel_size=conv2_kernel_size, activation='relu')
+        self.conv3 = keras.layers.Conv2D(filters=conv3_channels, kernel_size=conv3_kernel_size, activation='relu')
+        self.flatten = keras.layers.Flatten()
+        self.advantage_affine1 = keras.layers.Dense(units=affine_channels // 2, activation='relu')
+        self.advantage_affine2 = keras.layers.Dense(units=N_ACTIONS)
+        self.value_affine1 = keras.layers.Dense(units=affine_channels // 2, activation='relu')
+        self.value_affine2 = keras.layers.Dense(units=1)
+        self.get_mean = keras.layers.Lambda(lambda x: keras.backend.mean(x, axis=-1, keepdims=True))
+        self.repeat_value = keras.layers.RepeatVector(N_ACTIONS)
+        self.flatten_value = keras.layers.Flatten()
+        self.repeat_mean = keras.layers.RepeatVector(N_ACTIONS)
+        self.flatten_mean = keras.layers.Flatten()
+        self.subtract_mean = keras.layers.Subtract()
+        self.add_value_advantage = keras.layers.Add()
+
+    def call(self, inputs, *args, **kwargs):
+        x = inputs
+
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+
+        x = self.flatten(x)
+
+        # after the convolution we split into two streams, one of the advantage function and one of the value function
+        v = self.value_affine1(x)  # value
+        v = self.value_affine2(v)
+        v = self.repeat_value(v)  # take scalar and repeat to match N_ACTIONS
+        v = self.flatten_value(v)
+
+        # calculate A, mean(A)
+        a = self.advantage_affine1(x)  # advantage
+        a = self.advantage_affine2(a)
+        a_mean = self.get_mean(a)  # mean(A)
+        a_mean = self.repeat_mean(a_mean)  # take scalar and repeat to match N_ACTIONS
+        a_mean = self.flatten_mean(a_mean)
+
+        # we end by calculating the duel network objective V + (A - mean(A))
+        q = self.subtract_mean([a, a_mean])
+        q = self.add_value_advantage([v, q])
+
+        return q
+
+
 class QFunction(keras.Model):
     """
     A model trying to approximate the Q-function for every action a, given a state as an input.
     """
 
-    def __init__(self):
+    def __init__(self,
+                 conv1_channels, conv1_kernel_size,
+                 conv2_channels, conv2_kernel_size,
+                 conv3_channels, conv3_kernel_size,
+                 affine_channels):
         super(QFunction, self).__init__()
-        self.conv1 = keras.layers.Conv2D(filters=16, kernel_size=3, activation=tf.nn.relu)
-        self.conv2 = keras.layers.Conv2D(filters=32, kernel_size=3, activation=tf.nn.relu)
-        self.conv3 = keras.layers.Conv2D(filters=64, kernel_size=3, activation=tf.nn.relu)
+        self.conv1 = keras.layers.Conv2D(filters=conv1_channels, kernel_size=conv1_kernel_size, activation='relu')
+        self.conv2 = keras.layers.Conv2D(filters=conv2_channels, kernel_size=conv2_kernel_size, activation='relu')
+        self.conv3 = keras.layers.Conv2D(filters=conv3_channels, kernel_size=conv3_kernel_size, activation='relu')
         self.flatten = keras.layers.Flatten()
-        self.affine1 = keras.layers.Dense(units=128, activation=tf.nn.relu)
+        self.affine1 = keras.layers.Dense(units=affine_channels, activation='relu')
         self.affine2 = keras.layers.Dense(units=N_ACTIONS)
 
     def __call__(self, inputs, *args, **kwargs):
@@ -437,7 +525,7 @@ class DQN(bp.Policy):
     params = {
         # epsilon controls the exploration:
         # when acting, with probability epsilon select random action.
-        'epsilon': 0.1,
+        'epsilon': 0.25,
 
         # How much to decay epsilon during the game.
         # The current epsilon will be initialized to epsilon, and decay linearly
@@ -452,6 +540,26 @@ class DQN(bp.Policy):
         # in each training iteration.
         'bs': 32,
 
+        # The learning-rate to initialize the Adam optimizer with.
+        'lr': 0.001,
+
+        # How many times to decay the learning-rate.
+        'lr_n_changes': 0,
+
+        # The factor to decay the learning-rate each time.
+        'lr_decay_factor': 0.5,
+
+        # Number of channels and convolution's kernel-sizes for the neural-network.
+        'conv1_channels': 16,
+        'conv1_kernel_size': 3,
+        'conv2_channels': 32,
+        'conv2_kernel_size': 3,
+        'conv3_channels': 64,
+        'conv3_kernel_size': 3,
+        'affine_channels': 128,
+
+        'kernel_size': 3,
+
         # The size of the squared window to take around the head of the snake.
         'window_size': 13,
 
@@ -463,6 +571,12 @@ class DQN(bp.Policy):
 
         # How to sample mini-batches from the ReplayMemory.
         'sampling_method': 'uniform',
+
+        # If it's greater than 0, give a reward when another snake dies crashing on our snake.
+        'kill_snakes_reward': 0,
+
+        # If it's greater than 0, give a reward when another snake dies crashing on our snake.
+        'use_symmetric_experiences': True,
 
         # The minimal weight (probability) to give samples we wish to
         # sample less (or not at all, if it's zero)
@@ -480,8 +594,11 @@ class DQN(bp.Policy):
         # https://arxiv.org/pdf/1511.05952.pdf
         'prioritized_memory': False,
 
-        # If it's greater than 0, give a reward when another snake dies crashing on our snake.
-        'kill_snakes_reward': 0,
+        # Whether to implement Dueling DQN.
+        # Reference:
+        # "Dueling Network Architectures for Deep Reinforcement Learning"
+        # https://arxiv.org/pdf/1511.06581.pdf
+        'duel_dqn': False,
     }
 
     def cast_string_args(self, policy_args):
@@ -517,6 +634,11 @@ class DQN(bp.Policy):
         # This is the number of exploration steps, which are all steps except the score scope.
         self.exploration_steps = self.game_duration - self.score_scope
 
+        # If we add symmetric experiences, we dot not want them to take the space of actual experiences,
+        # so we increase the memory-size  by 3 (because at most 2 symmetric experiences are added per real experience).
+        if self.use_symmetric_experiences:
+            self.memory_size *= 3
+
         # This is the replay-memory containing the past experiences (up to a maximal size).
         self.replay_memory = ReplayMemory(state_shape=(self.window_size, self.window_size, N_VALUES),
                                           max_size=self.memory_size,
@@ -528,11 +650,27 @@ class DQN(bp.Policy):
         # Initialize the two Q-functions - one is the actual Q-function to be learned, and the second is the target
         # Q-function that will be fixed and its weights will be updated every self.update_target_interval iterations.
         # (this is inspired by the original DQN paper).
-        self.q_function = QFunction()
-        self.target_function = QFunction()
+        model_class = DuelQFunction if self.duel_dqn else QFunction
+        model_args = (self.conv1_channels, self.conv1_kernel_size,
+                      self.conv2_channels, self.conv2_kernel_size,
+                      self.conv3_channels, self.conv3_kernel_size,
+                      self.affine_channels)
 
-        self.q_function.compile(optimizer='adam', loss='mse')
-        self.target_function.compile(optimizer='adam', loss='mse')
+        self.q_function = model_class(*model_args)
+        self.target_function = model_class(*model_args)
+
+        for model in [self.q_function, self.target_function]:
+            if self.lr_n_changes > 0:
+                lr_boundaries = list(np.linspace(start=self.game_duration / (self.lr_n_changes + 1),
+                                                 stop=self.game_duration, num=self.lr_n_changes,
+                                                 endpoint=False, dtype=np.float32))
+                lr_values = list(self.lr * (self.lr_decay_factor ** np.arange(self.lr_n_changes + 1, dtype=np.float32)))
+                lr_schedule = keras.optimizers.schedules.PiecewiseConstantDecay(lr_boundaries, lr_values)
+            else:
+                lr_schedule = self.lr
+
+            optimizer = keras.optimizers.Adam(learning_rate=lr_schedule)
+            model.compile(optimizer=optimizer, loss='mse')
 
         # Avoid "lazy evaluation" in keras, which will cause the model to build its
         # training-function and predict-function in the first learning iterations.
@@ -726,7 +864,7 @@ class DQN(bp.Policy):
         killed_snake = False
 
         if (self.kill_snakes_reward > 0) and died_snake(prev_state, new_state, self.window_size, self.id):
-        # if died_snake(prev_state, new_state, self.window_size, self.id):
+            # if died_snake(prev_state, new_state, self.window_size, self.id):
             # self.log("I killed a snake!", 'VALUE')
             reward += self.kill_snakes_reward
             killed_snake = True
@@ -736,6 +874,12 @@ class DQN(bp.Policy):
         action_index = bp.Policy.ACTIONS.index(prev_action)
 
         self.replay_memory.append(prev_state_array, action_index, reward, new_state_array)
+
+        # Add the symmetric experiences, if the flag was set to True.
+        if self.use_symmetric_experiences:
+            for memory in get_symmetric_windows(prev_state_array, prev_action, new_state_array):
+                sym_state, sym_action, sym_next = memory  # unpack the tuple
+                self.replay_memory.append(sym_state, sym_action, reward, sym_next)
 
         # TODO remove these lines - used for debugging purposes...
         # TODO --------------------------------------------------
