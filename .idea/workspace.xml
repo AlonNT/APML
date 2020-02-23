@@ -2,7 +2,43 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="72190662-d97a-4238-a082-deda27fce1da" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/project/Snake_Code/policies/policy_dqn.py" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/policies/policy_dqn.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_averaged_kills.png" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_averaged_kills.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_averaged_kills.svg" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_averaged_kills.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_averaged_rewards.png" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_averaged_rewards.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_averaged_rewards.svg" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_averaged_rewards.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_last_5000_score_scope_mean_kills.png" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_last_5000_score_scope_mean_kills.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_last_5000_score_scope_mean_kills.svg" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_last_5000_score_scope_mean_kills.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_last_5000_score_scope_mean_rewards.png" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_last_5000_score_scope_mean_rewards.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_last_5000_score_scope_mean_rewards.svg" beforeDir="false" afterPath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-42-epsilons/2020-02-22-18-30-42-epsilons_last_5000_score_scope_mean_rewards.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/2020-02-22-18-30-53-epsilons_averaged_kills.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/2020-02-22-18-30-53-epsilons_averaged_kills.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/2020-02-22-18-30-53-epsilons_averaged_rewards.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/2020-02-22-18-30-53-epsilons_averaged_rewards.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/2020-02-22-18-30-53-epsilons_last_5000_score_scope_mean_kills.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/2020-02-22-18-30-53-epsilons_last_5000_score_scope_mean_kills.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/2020-02-22-18-30-53-epsilons_last_5000_score_scope_mean_rewards.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/2020-02-22-18-30-53-epsilons_last_5000_score_scope_mean_rewards.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id0_kills" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id0_losses" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id0_params.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id0_rewards" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id1_kills" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id1_losses" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id1_params.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id1_rewards" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id2_kills" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id2_losses" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id2_params.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id2_rewards" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id3_kills" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id3_losses" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id3_params.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id3_rewards" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id4_kills" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id4_losses" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id4_params.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/Snake_Code/logs/2020-02-22-18-30-53-epsilons/id4_rewards" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -53,8 +89,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/policy_dqn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="751">
-              <caret line="882" column="52" lean-forward="true" selection-start-line="882" selection-start-column="52" selection-end-line="882" selection-end-column="52" />
+            <state relative-caret-position="1027">
+              <caret line="569" column="37" selection-start-line="569" selection-start-column="34" selection-end-line="569" selection-end-column="37" />
             </state>
           </provider>
         </entry>
@@ -446,7 +482,7 @@
       <workItem from="1580664750737" duration="5652000" />
       <workItem from="1580830510680" duration="16811000" />
       <workItem from="1580927258125" duration="43849000" />
-      <workItem from="1582377786169" duration="3172000" />
+      <workItem from="1582377786169" duration="4164000" />
     </task>
     <task id="LOCAL-00001" summary="Ex2 - everything seems to work fine now :)">
       <created>1575721889511</created>
@@ -459,7 +495,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="356923000" />
+    <option name="totallyTimeSpent" value="357915000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -1032,8 +1068,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/project/Snake_Code/policies/policy_dqn.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="751">
-          <caret line="882" column="52" lean-forward="true" selection-start-line="882" selection-start-column="52" selection-end-line="882" selection-end-column="52" />
+        <state relative-caret-position="1027">
+          <caret line="569" column="37" selection-start-line="569" selection-start-column="34" selection-end-line="569" selection-end-column="37" />
         </state>
       </provider>
     </entry>
