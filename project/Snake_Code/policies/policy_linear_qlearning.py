@@ -677,7 +677,12 @@ class LinearQLearning(bp.Policy):
             s = 'id{}'.format(self.id)
 
             out_dir = os.path.join('logs', time_str)
-            pathlib.Path(out_dir).mkdir(exist_ok=True)
+            
+            try:
+                os.makedirs(out_dir)
+            except OSError:
+                if not os.path.isdir(out_dir):
+                    raise
 
             np.array(self.losses, dtype=np.float32).tofile(os.path.join(out_dir, '{}_losses'.format(s)))
             np.array(self.rewards, dtype=np.float32).tofile(os.path.join(out_dir, '{}_rewards'.format(s)))

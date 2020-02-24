@@ -1,0 +1,1 @@
+{"update_target_interval": 100, "lr": 0.001, "window_size": 13, "decay_epsilon": true, "smallest_weight": 0.5, "epsilon": 0.25, "use_symmetric_experiences": true, "decay_lr": 0, "memory_size": 3, "sampling_method": "uniform", "bs": 1, "kill_snakes_reward": 0, "prioritized_memory": false, "gamma": 0.96}
