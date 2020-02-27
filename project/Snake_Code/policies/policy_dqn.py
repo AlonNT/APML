@@ -432,14 +432,19 @@ class DuelQFunction(keras.Model):
     """
 
     def __init__(self,
-                 conv1_channels, conv1_kernel_size,
-                 conv2_channels, conv2_kernel_size,
-                 conv3_channels, conv3_kernel_size,
+                 conv1_channels, conv1_kernel_size, conv1_stride,
+                 conv2_channels, conv2_kernel_size, conv2_stride,
+                 conv3_channels, conv3_kernel_size, conv3_stride, conv3_on,
                  affine_channels):
         super(DuelQFunction, self).__init__()
-        self.conv1 = keras.layers.Conv2D(filters=conv1_channels, kernel_size=conv1_kernel_size, activation='relu')
-        self.conv2 = keras.layers.Conv2D(filters=conv2_channels, kernel_size=conv2_kernel_size, activation='relu')
-        self.conv3 = keras.layers.Conv2D(filters=conv3_channels, kernel_size=conv3_kernel_size, activation='relu')
+        self.conv1 = keras.layers.Conv2D(filters=conv1_channels, kernel_size=conv1_kernel_size, activation='relu', strides=conv1_stride)
+        self.conv2 = keras.layers.Conv2D(filters=conv2_channels, kernel_size=conv2_kernel_size, activation='relu', strides=conv2_stride)
+        
+        if conv3_on == 1:
+            self.conv3 = keras.layers.Conv2D(filters=conv3_channels, kernel_size=conv3_kernel_size, activation='relu', strides=conv3_stride)
+        else:
+            self.conv3 = None
+
         self.flatten = keras.layers.Flatten()
         self.advantage_affine1 = keras.layers.Dense(units=affine_channels // 2, activation='relu')
         self.advantage_affine2 = keras.layers.Dense(units=N_ACTIONS)
@@ -458,7 +463,9 @@ class DuelQFunction(keras.Model):
 
         x = self.conv1(x)
         x = self.conv2(x)
-        x = self.conv3(x)
+        
+        if self.conv3 is not None:
+            x = self.conv3(x)
 
         x = self.flatten(x)
 
@@ -488,14 +495,19 @@ class QFunction(keras.Model):
     """
 
     def __init__(self,
-                 conv1_channels, conv1_kernel_size,
-                 conv2_channels, conv2_kernel_size,
-                 conv3_channels, conv3_kernel_size,
+                 conv1_channels, conv1_kernel_size, conv1_stride,
+                 conv2_channels, conv2_kernel_size, conv2_stride,
+                 conv3_channels, conv3_kernel_size, conv3_stride, conv3_on,
                  affine_channels):
         super(QFunction, self).__init__()
-        self.conv1 = keras.layers.Conv2D(filters=conv1_channels, kernel_size=conv1_kernel_size, activation='relu')
-        self.conv2 = keras.layers.Conv2D(filters=conv2_channels, kernel_size=conv2_kernel_size, activation='relu')
-        self.conv3 = keras.layers.Conv2D(filters=conv3_channels, kernel_size=conv3_kernel_size, activation='relu')
+        self.conv1 = keras.layers.Conv2D(filters=conv1_channels, kernel_size=conv1_kernel_size, activation='relu', strides=conv1_stride)
+        self.conv2 = keras.layers.Conv2D(filters=conv2_channels, kernel_size=conv2_kernel_size, activation='relu', strides=conv2_stride)
+        
+        if conv3_on == 1:
+            self.conv3 = keras.layers.Conv2D(filters=conv3_channels, kernel_size=conv3_kernel_size, activation='relu', strides=conv3_stride)
+        else:
+            self.conv3 = None
+
         self.flatten = keras.layers.Flatten()
         self.affine1 = keras.layers.Dense(units=affine_channels, activation='relu')
         self.affine2 = keras.layers.Dense(units=N_ACTIONS)
@@ -505,7 +517,9 @@ class QFunction(keras.Model):
 
         x = self.conv1(x)
         x = self.conv2(x)
-        x = self.conv3(x)
+        
+        if self.conv3 is not None:
+            x = self.conv3(x)
 
         x = self.flatten(x)
 
@@ -552,10 +566,14 @@ class DQN(bp.Policy):
         # Number of channels and convolution's kernel-sizes for the neural-network.
         'conv1_channels': 16,
         'conv1_kernel_size': 3,
+        'conv1_stride': 1,
         'conv2_channels': 32,
         'conv2_kernel_size': 3,
+        'conv2_stride': 1,
         'conv3_channels': 64,
         'conv3_kernel_size': 3,
+        'conv3_stride': 1,
+        'conv3_on': 1,
         'affine_channels': 128,
 
         'kernel_size': 3,
@@ -651,9 +669,9 @@ class DQN(bp.Policy):
         # Q-function that will be fixed and its weights will be updated every self.update_target_interval iterations.
         # (this is inspired by the original DQN paper).
         model_class = DuelQFunction if self.duel_dqn else QFunction
-        model_args = (self.conv1_channels, self.conv1_kernel_size,
-                      self.conv2_channels, self.conv2_kernel_size,
-                      self.conv3_channels, self.conv3_kernel_size,
+        model_args = (self.conv1_channels, self.conv1_kernel_size, self.conv1_stride,
+                      self.conv2_channels, self.conv2_kernel_size, self.conv2_stride,
+                      self.conv3_channels, self.conv3_kernel_size, self.conv3_stride,  self.conv3_on,
                       self.affine_channels)
 
         self.q_function = model_class(*model_args)
