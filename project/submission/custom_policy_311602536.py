@@ -1,15 +1,7 @@
 from policies import base_policy as bp
 import numpy as np
-import tensorflow as tf
 from tensorflow import keras
-# TODO remove these lines - used for debugging purposes...
-# TODO --------------------------------------------------
-from datetime import datetime
-import os
-import json
-import pathlib
 
-# TODO --------------------------------------------------
 
 # The possible values are integers from -1 to 9 (inclusive) representing the different objects,
 # but we do not know which number correspond to which object.
@@ -529,7 +521,7 @@ class QFunction(keras.Model):
         return x
 
 
-class DQN(bp.Policy):
+class Custom311602536(bp.Policy):
     """
     An agent implementing Deep Q-Learning.
     Reference:
@@ -610,20 +602,20 @@ class DQN(bp.Policy):
         # Reference:
         # "PRIORITIZED EXPERIENCE REPLAY"
         # https://arxiv.org/pdf/1511.05952.pdf
-        'prioritized_memory': False,
+        'prioritized_memory': True,
 
         # Whether to implement Dueling DQN.
         # Reference:
         # "Dueling Network Architectures for Deep Reinforcement Learning"
         # https://arxiv.org/pdf/1511.06581.pdf
-        'duel_dqn': False,
+        'duel_dqn': True,
     }
 
     def cast_string_args(self, policy_args):
         # Initial the parameters according to their default values,
         # or according to the given arguments from the command-line.
-        for param_name in DQN.params.keys():
-            default_value = DQN.params[param_name]
+        for param_name in Custom311602536.params.keys():
+            default_value = Custom311602536.params[param_name]
             param_type = type(default_value)
 
             # If the parameter does not exist in the policy_args dictionary, add it with its default value.
@@ -636,15 +628,6 @@ class DQN(bp.Policy):
         return policy_args
 
     def init_run(self):
-        # TODO remove these lines - used for debugging purposes...
-        # TODO --------------------------------------------------
-        self.rewards = list()
-        self.losses = list()
-        self.kills = list()
-        # This is the sum of rewards among the last iterations, in order to print.
-        self.reward_sum = 0
-        # TODO --------------------------------------------------
-
         # This is the current epsilon, which defined the exploration probability.
         # It might change during time (e.g. decay).
         self.curr_epsilon = self.epsilon
@@ -813,38 +796,18 @@ class DQN(bp.Policy):
 
             # If we use prioritized-memory, we need to train with the corresponding sample_weight.
             train_kwargs = {'sample_weight': weights[indices]} if self.prioritized_memory else dict()
-            loss = self.q_function.train_on_batch(inputs, targets, **train_kwargs)
-            # TODO remove these lines - used for debugging purposes...
-            # TODO --------------------------------------------------
-            self.losses.append(loss)
-            # TODO --------------------------------------------------
+            self.q_function.train_on_batch(inputs, targets, **train_kwargs)
 
             # If we use prioritized-memory, update the deltas
             # (Temporal-Difference errors, which contributes to the priority of the experiences).
             if self.prioritized_memory:
                 deltas = np.sum(np.abs(predictions - targets), axis=1)
                 self.replay_memory.update_deltas(indices, deltas)
-                # TODO why like this? Maybe because the sample_weight given to the train_on_batch function?
-                # assert abs(loss - np.mean(deltas ** 2)) < 0.0001, "Wrong calculation of the loss."
 
         # Every self.update_target_interval iterations,
         # update the target Q-function network weights to match the Q-function weights.
         if round % self.update_target_interval == 0:
             self.target_function.set_weights(self.q_function.get_weights())
-
-        # TODO remove these lines - used for debugging purposes...
-        # TODO --------------------------------------------------
-        if round % 1000 == 0:
-            # self.log("Q-Function network's loss = " + str(loss), 'VALUE')
-            if round > self.game_duration - self.score_scope:
-                self.log("Rewards in last 1000 rounds which counts towards the score: " + str(self.reward_sum), 'VALUE')
-            else:
-                self.log("Rewards in last 1000 rounds: " + str(self.reward_sum), 'VALUE')
-
-            self.reward_sum = 0
-        else:
-            self.reward_sum += reward
-        # TODO --------------------------------------------------
 
     def select_action(self, state):
         """
@@ -870,13 +833,8 @@ class DQN(bp.Policy):
         if (prev_state is None) or (prev_action is None) or (reward is None) or (new_state is None):
             return np.random.choice(bp.Policy.ACTIONS)
 
-        killed_snake = False
-
         if (self.kill_snakes_reward > 0) and died_snake(prev_state, new_state, self.window_size, self.id):
-            # if died_snake(prev_state, new_state, self.window_size, self.id):
-            # self.log("I killed a snake!", 'VALUE')
             reward += self.kill_snakes_reward
-            killed_snake = True
 
         prev_state_array = get_state_array(prev_state, self.window_size)
         new_state_array = get_state_array(new_state, self.window_size)
@@ -889,30 +847,6 @@ class DQN(bp.Policy):
             for memory in get_symmetric_windows(prev_state_array, prev_action, new_state_array):
                 sym_state, sym_action, sym_next = memory  # unpack the tuple
                 self.replay_memory.append(sym_state, sym_action, reward, sym_next)
-
-        # TODO remove these lines - used for debugging purposes...
-        # TODO --------------------------------------------------
-        self.rewards.append(reward if not killed_snake else reward - self.kill_snakes_reward)
-        self.kills.append(killed_snake)
-        if round == self.game_duration - 1:
-            time_str = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-            s = 'id{}'.format(self.id)
-
-            out_dir = os.path.join('logs', time_str)
-
-            try:
-                os.makedirs(out_dir)
-            except OSError:
-                if not os.path.isdir(out_dir):
-                    raise
-
-            np.array(self.losses, dtype=np.float32).tofile(os.path.join(out_dir, '{}_losses'.format(s)))
-            np.array(self.rewards, dtype=np.float32).tofile(os.path.join(out_dir, '{}_rewards'.format(s)))
-            np.array(self.kills, dtype=np.float32).tofile(os.path.join(out_dir, '{}_kills'.format(s)))
-
-            with open(os.path.join(out_dir, '{}_params.json'.format(s)), 'w') as f:
-                json.dump({k: self.__dict__[k] for k in self.__dict__.keys() if k in DQN.params.keys()}, f)
-        # TODO --------------------------------------------------
 
         # Exploration, with probability epsilon.
         if np.random.rand() < self.curr_epsilon:
